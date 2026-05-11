@@ -8,6 +8,14 @@ from src.llm.routing import get_route
 
 
 class LLMClient:
+    _semaphore: asyncio.Semaphore | None = None
+
+    @classmethod
+    def _get_semaphore(cls) -> asyncio.Semaphore:
+        if cls._semaphore is None:
+            cls._semaphore = asyncio.Semaphore(1)
+        return cls._semaphore
+
     def __init__(self):
         self._client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
@@ -22,11 +30,12 @@ class LLMClient:
         if cached is not None:
             return cached
 
-        response = await self._client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.2,
-        )
+        async with self._get_semaphore():
+            response = await self._client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+            )
         content = response.choices[0].message.content or ""
         self._cache.set(cache_key, content)
         return content
