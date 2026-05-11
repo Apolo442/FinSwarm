@@ -1,6 +1,5 @@
 from __future__ import annotations
 import asyncio
-import os
 from uuid import uuid4
 
 from dotenv import load_dotenv
@@ -77,3 +76,4 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
         pass
     finally:
         _jobs.pop(job_id, None)
+        _results.pop(job_id, None)
