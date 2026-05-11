@@ -25,7 +25,7 @@ async def test_full_analysis_petr4(llm):
     assert result.recommendation in ("COMPRAR", "MANTER", "VENDER")
     assert 0.0 <= result.confidence <= 1.0
     assert 0 <= result.risk_score <= 100
-    assert result.elapsed_seconds < 120
+    assert result.elapsed_seconds < 600
     assert len(result.agents) == 7
 
     failed = [k for k, v in result.agents.items() if v.status == "failed"]

@@ -33,7 +33,7 @@ class LLMClient:
 
     async def complete_with_routing(self, routing_key: str, messages: list[dict]) -> str:
         route = get_route(routing_key)
-        backoff = route.get("backoff", [1.0, 2.0, 4.0])
+        backoff = route.get("backoff", [35.0, 35.0, 35.0])
 
         for attempt, delay in enumerate(backoff):
             model = route["primary"] if attempt == 0 else route.get("fallback", route["primary"])
@@ -41,9 +41,18 @@ class LLMClient:
                 raise RuntimeError(f"Sem fallback disponível para routing_key={routing_key}")
             try:
                 return await self.complete(messages=messages, model=model)
-            except Exception:
+            except Exception as exc:
                 if attempt == len(backoff) - 1:
                     raise
-                await asyncio.sleep(delay)
+                wait = _parse_retry_after(exc) or delay
+                await asyncio.sleep(wait)
 
         raise RuntimeError("Esgotadas todas as tentativas do LLM client")
+
+
+def _parse_retry_after(exc: Exception) -> float | None:
+    try:
+        body = exc.body if hasattr(exc, "body") else {}
+        return float(body["error"]["metadata"]["retry_after_seconds"])
+    except Exception:
+        return None

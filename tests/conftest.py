@@ -1,5 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @pytest.fixture

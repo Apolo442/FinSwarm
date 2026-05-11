@@ -10,22 +10,22 @@ class RouteConfig(TypedDict, total=False):
 
 ROUTING_TABLE: dict[str, RouteConfig] = {
     "default": {
-        "primary": "google/gemini-2.5-flash:free",
-        "fallback": "meta-llama/llama-3.3-70b-instruct:free",
+        "primary": "meta-llama/llama-3.3-70b-instruct:free",
+        "fallback": "qwen/qwen-2.5-72b-instruct:free",
         "retries": 3,
-        "backoff": [1.0, 2.0, 4.0],
+        "backoff": [35.0, 35.0, 35.0],
     },
     "sentiment": {
-        "primary": "mistral/mistral-large-2407:free",
-        "fallback": "google/gemini-2.5-flash:free",
+        "primary": "meta-llama/llama-3.1-8b-instruct:free",
+        "fallback": "meta-llama/llama-3.3-70b-instruct:free",
         "retries": 3,
-        "backoff": [1.0, 2.0, 4.0],
+        "backoff": [35.0, 35.0, 35.0],
     },
     "synthesis": {
         "primary": "qwen/qwen-2.5-72b-instruct:free",
-        "fallback": "google/gemini-2.5-flash:free",
+        "fallback": "meta-llama/llama-3.3-70b-instruct:free",
         "retries": 3,
-        "backoff": [1.0, 2.0, 4.0],
+        "backoff": [35.0, 35.0, 35.0],
     },
 }
 
