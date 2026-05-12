@@ -39,6 +39,7 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
           onChange={(e) => setValue(e.target.value)}
           disabled={disabled}
           aria-label="Ticker"
+          aria-describedby={error ? 'ticker-error' : undefined}
           className="flex-1 bg-transparent text-pure-white border border-pure-white rounded-pill px-5 py-2.5 placeholder:text-ash-text focus:outline-none focus:border-golden disabled:opacity-50"
         />
         <Button type="submit" disabled={disabled}>
@@ -46,7 +47,7 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
         </Button>
       </div>
       {error && (
-        <p role="alert" className="text-sm text-status-failed">
+        <p id="ticker-error" role="alert" className="text-sm text-status-failed">
           {error}
         </p>
       )}
