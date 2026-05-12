@@ -1,4 +1,4 @@
-# FinSwarm — Status do Projeto (2026-05-11)
+# FinSwarm — Status do Projeto (2026-05-12)
 
 ## O que é o FinSwarm
 
@@ -85,56 +85,41 @@ run_analysis("PETR4.SA"):
 
 ```python
 ROUTING_TABLE = {
-    "default":   primary="meta-llama/llama-3.3-70b-instruct:free",  fallback="nousresearch/hermes-3-llama-3.1-405b:free"
-    "sentiment": primary="nousresearch/hermes-3-llama-3.1-405b:free", fallback="meta-llama/llama-3.3-70b-instruct:free"
-    "synthesis": primary="nvidia/nemotron-3-super-120b-a12b:free",   fallback="nousresearch/hermes-3-llama-3.1-405b:free"
+    "default":   primary="meta-llama/llama-3.3-70b-instruct:free",      fallback="openai/gpt-oss-120b:free"
+    "sentiment": primary="qwen/qwen3-next-80b-a3b-instruct:free",       fallback="z-ai/glm-4.5-air:free"
+    "synthesis": primary="nvidia/nemotron-3-super-120b-a12b:free",      fallback="openai/gpt-oss-120b:free"
 }
 # backoff: [40.0, 60.0, 90.0] segundos entre tentativas
 ```
 
-**Por que esses modelos:** O Google (`gemma-4-31b-it:free`) era usado antes e causava 429 upstream do Google AI Studio independente de backoff. Substituído por modelos de 3 provedores diferentes (Meta, NousResearch, NVIDIA) para não bater no mesmo rate limit simultaneamente.
+**Por que esses modelos:** 5 provedores totalmente independentes (Meta, OpenAI, Qwen, ZhipuAI, NVIDIA) para não correlacionar rate limits upstream. Hermes-3-405b foi removido por ser lento/instável como `:free`.
 
-## Problema Atual — Teste de Integração FAILED
+## Estado dos Testes
 
-### Sintoma
-
-```
-FAILED tests/integration/test_full_analysis.py::test_full_analysis_petr4
-assert 638.9 < 600    ← superou por ~39s (timeout do teste)
-```
-
-Além disso, 5 de 7 agentes falharam com `429` do `gemma-4-31b-it` (já corrigido nos commits mais recentes).
-
-### Causa-raiz
-
-Modelos gratuitos do OpenRouter têm rate limit tanto no nível OpenRouter quanto upstream (no provedor — Google AI Studio, Meta, etc.). Com 7 agentes fazendo chamadas, mesmo com `asyncio.Semaphore(1)` (serializado, 1 chamada por vez), o backoff acumulado ultrapassa o timeout do teste.
-
-### O que já foi tentado / corrigido
-
-| Problema | Correção aplicada | Commit |
-|----------|-------------------|--------|
-| Chamadas paralelas causavam 429 simultâneos | `asyncio.Semaphore(1)` em `LLMClient` | `26f2bc8` |
-| `google/gemma-4-31b-it:free` bloqueado no Google AI Studio | Trocado por modelos Meta/NousResearch/NVIDIA | `bd43b59` |
-| Backoff de 35s insuficiente | Aumentado para `[40, 60, 90]` | `bd43b59` |
-| Timeout do teste era 600s | Aumentado para 1200s | `bd43b59` |
-| `conftest.py` importava `LLMClient` no nível de módulo | Lazy import dentro da fixture | `f9d3c50` |
-
-### Próximo passo recomendado
-
-Rodar o teste novamente com os modelos corrigidos (commits `bd43b59`):
+### Unitários: 33/33 passando
 
 ```bash
-poetry run pytest tests/integration/ -v -s
+poetry run pytest tests/unit/ -q
 ```
 
-Se ainda falhar com 429 no novo modelo, investigar:
-1. Verificar quais modelos estão passando/falhando no output `-v -s`
-2. Se `hermes-3-llama-3.1-405b` ou `llama-3.3-70b` também bloquearem, tentar `openai/gpt-oss-120b:free` como alternativa
-3. Consultar modelos disponíveis: `curl https://openrouter.ai/api/v1/models | python3 -c "import json,sys; [print(m['id']) for m in json.load(sys.stdin)['data'] if str(m.get('pricing',{}).get('prompt','1'))=='0' and 'google' not in m['id']]"`
+### Integração: PASSED (2026-05-12)
 
-### Alternativa de longo prazo
+```
+tests/integration/test_full_analysis.py::test_full_analysis_petr4 PASSED
+1 passed in 569.98s (0:09:29)
+```
 
-Adicionar créditos na conta OpenRouter (mesmo USD 5) remove os rate limits gratuitos e resolve definitivamente o problema.
+Fluxo completo PETR4.SA validado end-to-end contra OpenRouter real.
+
+## Histórico do problema de rate limit (resolvido)
+
+| Problema | Correção | Commit |
+|----------|----------|--------|
+| Chamadas paralelas causavam 429 simultâneos | `asyncio.Semaphore(1)` em `LLMClient` | `26f2bc8` |
+| `google/gemma-4-31b-it:free` bloqueado upstream | Trocado por Meta/NousResearch/NVIDIA | `bd43b59` |
+| Backoff de 35s insuficiente | Aumentado para `[40, 60, 90]` | `bd43b59` |
+| `conftest.py` importava `LLMClient` no nível de módulo | Lazy import dentro da fixture | `f9d3c50` |
+| Hermes-3-405b lento/instável | Substituído por Qwen/GLM/gpt-oss diversificando provedores | (atual) |
 
 ## Histórico de Commits
 
