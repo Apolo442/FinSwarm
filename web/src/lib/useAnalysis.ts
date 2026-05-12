@@ -48,11 +48,18 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
   const [state, setState] = useState<UseAnalysisState>(initialState)
   const [generation, setGeneration] = useState(0)
   const socketRef = useRef<WebSocket | null>(null)
+  const doneOrErrorRef = useRef<boolean>(false)
+  const didOpenRef = useRef<boolean>(false)
 
   useEffect(() => {
     const ws = new WebSocket(buildWsUrl(jobId))
     socketRef.current = ws
-    let doneOrError = false
+    doneOrErrorRef.current = false
+    didOpenRef.current = false
+
+    ws.onopen = () => {
+      didOpenRef.current = true
+    }
 
     ws.onmessage = (msg) => {
       let parsed: WsEvent
@@ -81,7 +88,7 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
               },
             }
           case 'done': {
-            doneOrError = true
+            doneOrErrorRef.current = true
             const reconciled = { ...prev.agents }
             for (const name of AGENT_ORDER) {
               const agentOutput = parsed.result.agents[name]
@@ -99,7 +106,7 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
             }
           }
           case 'error':
-            doneOrError = true
+            doneOrErrorRef.current = true
             return { ...prev, error: parsed.message }
           default:
             return prev
@@ -108,7 +115,7 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
     }
 
     ws.onclose = () => {
-      if (!doneOrError) {
+      if (!doneOrErrorRef.current && didOpenRef.current) {
         setState((prev) => ({ ...prev, connectionLost: true }))
       }
     }
