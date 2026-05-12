@@ -47,13 +47,11 @@ function buildWsUrl(jobId: string): string {
 export function useAnalysis(jobId: string): UseAnalysisReturn {
   const [state, setState] = useState<UseAnalysisState>(initialState)
   const [generation, setGeneration] = useState(0)
-  const socketRef = useRef<WebSocket | null>(null)
   const doneOrErrorRef = useRef<boolean>(false)
   const didOpenRef = useRef<boolean>(false)
 
   useEffect(() => {
     const ws = new WebSocket(buildWsUrl(jobId))
-    socketRef.current = ws
     doneOrErrorRef.current = false
     didOpenRef.current = false
 
