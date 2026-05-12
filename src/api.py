@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import field_validator
 
 from src.llm.client import LLMClient
@@ -13,6 +14,13 @@ from src.orchestrator import run_analysis
 load_dotenv()
 
 app = FastAPI(title="FinSwarm", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 _jobs: dict[str, asyncio.Queue] = {}
 _results: dict[str, AnalysisResult | Exception] = {}
