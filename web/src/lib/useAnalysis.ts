@@ -67,8 +67,10 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
         return
       }
       setState((prev) => {
-        const isAgentEvent = parsed.event === 'agent_start' || parsed.event === 'agent_done'
-        if (isAgentEvent && !AGENT_ORDER.includes(parsed.agent)) {
+        if (
+          (parsed.event === 'agent_start' || parsed.event === 'agent_done') &&
+          !AGENT_ORDER.includes(parsed.agent)
+        ) {
           return prev
         }
         switch (parsed.event) {

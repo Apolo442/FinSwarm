@@ -10,8 +10,7 @@ const WS_URL = 'ws://localhost/ws/abc123'
 const originalWebSocket = globalThis.WebSocket
 
 beforeEach(() => {
-  // @ts-expect-error mock-socket WebSocket has slightly different signature
-  globalThis.WebSocket = MockWebSocket
+  globalThis.WebSocket = MockWebSocket as unknown as typeof WebSocket
 })
 
 afterEach(() => {
