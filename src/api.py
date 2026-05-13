@@ -1,7 +1,10 @@
 from __future__ import annotations
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from uuid import uuid4
+
+_log = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -81,7 +84,10 @@ async def _run_and_store(job_id: str, ticker: str, llm: LLMClient, queue: asynci
         result = await run_analysis(ticker, llm, job_id=job_id, progress_callback=push_event)
         _results[job_id] = result
         await queue.put(WsEvent(event="done", result=result, elapsed=result.elapsed_seconds))
-        await save_analysis(result)
+        try:
+            await save_analysis(result)
+        except Exception as db_exc:
+            _log.error("save_analysis failed for job %s: %s", job_id, db_exc)
     except Exception as exc:
         _results[job_id] = exc
         await queue.put(WsEvent(event="error", message=str(exc)))
