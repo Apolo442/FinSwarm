@@ -49,3 +49,12 @@ export interface AgentState {
   status: AgentStatus
   elapsed: number | null
 }
+
+export interface AnalysisRow {
+  job_id: string
+  ticker: string
+  timestamp: string
+  recommendation: Recommendation
+  confidence: number
+  risk_score: number
+}
