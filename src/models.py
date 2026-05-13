@@ -39,3 +39,12 @@ class WsEvent(BaseModel):
     elapsed: float | None = None
     result: AnalysisResult | None = None
     message: str | None = None
+
+
+class AnalysisRow(BaseModel):
+    job_id: str
+    ticker: str
+    timestamp: datetime
+    recommendation: Literal["COMPRAR", "MANTER", "VENDER"]
+    confidence: float
+    risk_score: int
