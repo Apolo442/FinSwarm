@@ -50,7 +50,7 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
 
   const filtered = rows.filter(r => {
     const matchRec    = filter === 'ALL' || r.recommendation === filter
-    const matchSearch = r.ticker.includes(search.toUpperCase())
+    const matchSearch = r.ticker.includes(search.trim().toUpperCase())
     return matchRec && matchSearch
   })
 
@@ -61,7 +61,7 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
         <span className="font-mono text-[10px] uppercase tracking-widest text-dim-gray">
           Histórico
         </span>
-        <span className="font-mono text-[11px] text-data-blue tabular-nums">{rows.length}</span>
+        <span className="font-mono text-[11px] text-data-blue tabular-nums">{filtered.length}</span>
       </div>
 
       {/* Search */}
