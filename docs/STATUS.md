@@ -2,17 +2,18 @@
 
 ## Onde estamos
 
-Branch ativo: **`feat/web`** (24 commits à frente de `main`).
+Branch ativo: **`feat/web`** (31+ commits à frente de `main`).
 
-- Backend FinSwarm (Python) — completo e funcional. 33 testes unitários + 1 integração (PETR4 PASSED 570s) verdes.
-- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — estrutural completo, 19 testes verdes, `npm run build` verde.
+- Backend FinSwarm (Python) — completo e funcional. 43 testes unitários verdes.
+- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, 31 testes verdes, `npm run build` verde.
 - Integração e2e backend↔frontend — **funcional**. WebSocket (Chrome ↔ uvicorn) resolvido com `--ws wsproto` + bypass direto no `useAnalysis.ts`.
+- Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db` e exibidas no drawer de histórico na Home.
 
 ## Stack
 
-- **Backend:** Python 3.12, FastAPI, OpenRouter via OpenAI SDK, yfinance, fundamentus, GNews, 7 agentes orquestrados com asyncio.
+- **Backend:** Python 3.12, FastAPI, OpenRouter via OpenAI SDK, yfinance, fundamentus, GNews, 7 agentes orquestrados com asyncio, aiosqlite.
 - **Frontend:** Vite 5, React 18, TypeScript 5, Tailwind v4 (`@tailwindcss/vite`), React Router 6, Vitest + RTL + mock-socket.
-- **Estilo visual:** `DESIGN.md` (raiz do repo) — sistema "Slash / Midnight Ledger, Obsidian Surfaces", dark fintech tipo Ramp/Mercury.
+- **Estilo visual:** `style.md` (raiz do repo) — referência de design.
 
 ## Como rodar
 
@@ -32,9 +33,10 @@ cd web && npm run dev
 ```
 finswarm/
 ├── src/                              # backend Python
-│   ├── api.py                        # FastAPI + CORS (allow_origins=:5173)
+│   ├── api.py                        # FastAPI + CORS + lifespan (init_db)
+│   ├── db.py                         # SQLite via aiosqlite (init, save, list, get)
 │   ├── orchestrator.py
-│   ├── models.py
+│   ├── models.py                     # AnalysisResult, AnalysisRow, WsEvent, ...
 │   ├── agents/                       # 7 agentes
 │   ├── data/                         # yfinance, fundamentus, news
 │   └── llm/
@@ -42,35 +44,43 @@ finswarm/
 │       ├── routing.py                # ROUTING_TABLE
 │       └── cache.py
 ├── web/                              # frontend Vite
-│   ├── vite.config.ts                # proxy / + types ref vitest
+│   ├── vite.config.ts                # proxy /analyze /analyses /health /ws
 │   ├── src/
 │   │   ├── main.tsx, App.tsx
-│   │   ├── index.css                 # @theme tailwind v4 com tokens DESIGN.md
+│   │   ├── index.css                 # @theme tailwind v4 com tokens style.md
 │   │   ├── pages/
-│   │   │   ├── Home.tsx              # hero + TickerInput
+│   │   │   ├── Home.tsx              # grid 2 colunas: hero+input | HistoryDrawer
 │   │   │   └── Analysis.tsx          # split timeline + AgentSlots
 │   │   ├── components/
 │   │   │   ├── TickerInput.tsx
-│   │   │   ├── AgentTimeline.tsx     # stepper 01..07 numerado
+│   │   │   ├── AgentTimeline.tsx
 │   │   │   ├── AgentTimelineItem.tsx
-│   │   │   ├── AgentSlot.tsx         # card por agente (pending/running/ok/failed)
-│   │   │   ├── AgentCard.tsx         # versão legada (só p/ result final) — mantido p/ tests
+│   │   │   ├── AgentSlot.tsx
+│   │   │   ├── AgentCard.tsx         # legado, mantido p/ tests
 │   │   │   ├── ReportHero.tsx
 │   │   │   ├── ErrorBanner.tsx
+│   │   │   ├── HistoryDrawer.tsx     # drawer lateral com busca + filtros
+│   │   │   ├── HistoryModal.tsx      # modal overlay com relatório completo
 │   │   │   └── ui/{Button,Card,Badge}.tsx
 │   │   └── lib/
-│   │       ├── types.ts              # AGENT_ORDER, AgentName, AnalysisResult, WsEvent
-│   │       ├── agentLabels.ts        # AGENT_LABELS + AGENT_RUNNING_PHRASES
-│   │       ├── api.ts                # postAnalyze + ApiError
+│   │       ├── types.ts              # AGENT_ORDER, AnalysisResult, AnalysisRow, WsEvent
+│   │       ├── agentLabels.ts
+│   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis
 │   │       └── useAnalysis.ts        # hook WebSocket
-│   └── test/                         # 19 testes vitest
-├── DESIGN.md                         # sistema visual completo (Tailwind v4 @theme)
+│   └── test/                         # 31 testes vitest
+├── style.md                          # referência de design (ÚNICA fonte de verdade visual)
+├── data/                             # ignorado pelo git
+│   └── analyses.db                   # SQLite — criado automaticamente
 ├── docs/
 │   ├── STATUS.md                     # você está aqui
 │   └── superpowers/
-│       ├── specs/2026-05-12-finswarm-web-design.md
-│       └── plans/2026-05-12-finswarm-web.md
-└── pyproject.toml                    # + wsproto, pytest-timeout
+│       ├── specs/
+│       │   ├── 2026-05-12-finswarm-web-design.md
+│       │   └── 2026-05-13-persistence-history-design.md
+│       └── plans/
+│           ├── 2026-05-12-finswarm-web.md
+│           └── 2026-05-13-persistence-history.md
+└── pyproject.toml                    # + wsproto, aiosqlite, pytest-timeout
 ```
 
 ## Routing LLM atual
@@ -82,23 +92,24 @@ finswarm/
 # backoff: [10, 25, 50] segundos
 ```
 
-**Histórico do dia:** `meta-llama/llama-3.3-70b-instruct:free` e `qwen/qwen3-next-80b-a3b-instruct:free` estavam dando TIMEOUT upstream em 2026-05-12 às 16h. Foram removidos. Os 3 acima estavam respondendo OK no mesmo horário (validado por ping direto via OpenRouter).
+**Histórico:** `meta-llama/llama-3.3-70b-instruct:free` e `qwen/qwen3-next-80b-a3b-instruct:free` davam TIMEOUT upstream em 2026-05-12. Foram removidos. Os 3 acima respondiam OK no mesmo horário.
 
 ## To-do (próximas sessões)
 
 ### [ ] Refatorar tela de pré-análise (inserção do ativo)
 
-- Tela `Home.tsx` + `TickerInput.tsx` precisam de revisão visual e de UX.
+- `Home.tsx` + `TickerInput.tsx` precisam de revisão visual e de UX.
 
 ### [ ] Refatorar tela de pós-análise (relatório visual)
 
 - `ReportHero.tsx` + `AgentSlot.tsx` no estado `ok` — layout e hierarquia visual do relatório final.
 
-### [ ] Persistência de análises (SQLite — MVP)
+### [x] Persistência de análises (SQLite — MVP)
 
-- Hoje o estado dos jobs vive em `_jobs: dict[str, asyncio.Queue]` em memória; reiniciar o uvicorn apaga tudo.
-- Persistir resultados concluídos em SQLite (`~/finswarm/data/analyses.db`) para histórico e navegação offline.
-- Backend: salvar `AnalysisResult` ao final de cada job. Frontend: tela de histórico simples (lista de análises salvas).
+- `src/db.py` + `data/analyses.db` + endpoints `GET /analyses` e `GET /analyses/{job_id}`.
+- `HistoryDrawer` sempre visível na coluna direita da Home; busca por ticker, filtro por recomendação.
+- `HistoryModal` overlay com relatório completo ao clicar num item do histórico.
+- Drawer recarrega automaticamente ao retornar de uma análise (via `location.key`).
 
 ## Fora do MVP (não priorizado)
 
@@ -112,22 +123,21 @@ finswarm/
 **Ler nesta ordem:**
 
 1. **`docs/STATUS.md`** (este arquivo) — começa aqui sempre.
-2. **`docs/superpowers/specs/2026-05-12-finswarm-web-design.md`** — spec original do frontend (a verdade sobre o que deveria existir).
-3. **`docs/superpowers/plans/2026-05-12-finswarm-web.md`** — plano de implementação (17 tasks); útil pra entender de onde veio cada arquivo.
-4. **`DESIGN.md`** — referência visual obrigatória pra qualquer mexida em UI.
+2. **`style.md`** — referência visual obrigatória pra qualquer mexida em UI.
+3. **`docs/superpowers/specs/2026-05-12-finswarm-web-design.md`** — spec original do frontend.
+4. **`docs/superpowers/plans/2026-05-12-finswarm-web.md`** — plano do frontend.
 
-**Pesquisar no log do dia:**
+**Pesquisar no log:**
 
 ```bash
-git log --oneline feat/web ^main      # 24 commits do trabalho de hoje
-git diff main feat/web -- web/        # diff completo do frontend
+git log --oneline feat/web ^main
 ```
 
 **Cuidados ao retomar:**
 
-- Backend deve subir com `--ws wsproto` SEMPRE em dev (sem isso o WS quebra silenciosamente).
-- `npm run dev` deve estar rodando — se houver Vite "zumbi" de sessão anterior (`pgrep -af vite`), matar antes de reiniciar.
-- Modelos `:free` mudam de estabilidade no dia. Antes de declarar bug, pingar cada modelo do `routing.py` via `OPENROUTER_API_KEY` e ver quais respondem:
+- Backend deve subir com `--ws wsproto` SEMPRE em dev.
+- `npm run dev` deve estar rodando — se houver Vite zumbi (`pgrep -af vite`), matar antes.
+- Modelos `:free` mudam de estabilidade. Antes de declarar bug, pingar cada modelo:
 
 ```python
 poetry run python -c "

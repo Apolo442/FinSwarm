@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { TickerInput } from '../components/TickerInput'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { HistoryDrawer } from '../components/HistoryDrawer'
@@ -8,6 +8,7 @@ import { ApiError, postAnalyze } from '../lib/api'
 
 export function Home() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [submitting, setSubmitting]       = useState(false)
   const [error, setError]                 = useState<string | null>(null)
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
@@ -55,7 +56,7 @@ export function Home() {
 
           {/* Coluna direita: histórico */}
           <aside className="lg:sticky lg:top-8 lg:self-start h-[calc(100vh-96px)] flex flex-col">
-            <HistoryDrawer onSelect={setSelectedJobId} />
+            <HistoryDrawer key={location.key} onSelect={setSelectedJobId} />
           </aside>
 
         </div>
