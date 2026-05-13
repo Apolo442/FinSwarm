@@ -40,6 +40,9 @@ function buildWsUrl(jobId: string): string {
   if (typeof window === 'undefined') {
     return `ws://localhost/ws/${jobId}`
   }
+  if (import.meta.env.DEV && window.location.port === '5173') {
+    return `ws://localhost:8000/ws/${jobId}`
+  }
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}/ws/${jobId}`
 }

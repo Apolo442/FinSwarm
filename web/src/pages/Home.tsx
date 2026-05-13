@@ -14,7 +14,7 @@ export function Home() {
     setError(null)
     try {
       const job = await postAnalyze(ticker)
-      navigate(`/analysis/${job.job_id}`)
+      navigate(`/analysis/${job.job_id}`, { state: { ticker } })
     } catch (e) {
       if (e instanceof ApiError) {
         setError(`Erro ${e.status}: ${e.message}`)

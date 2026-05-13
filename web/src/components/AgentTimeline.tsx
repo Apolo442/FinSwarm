@@ -13,6 +13,7 @@ export function AgentTimeline({ agents }: AgentTimelineProps) {
         <AgentTimelineItem
           key={name}
           agent={name}
+          index={idx}
           status={agents[name].status}
           elapsed={agents[name].elapsed}
           isLast={idx === AGENT_ORDER.length - 1}

@@ -10,22 +10,22 @@ class RouteConfig(TypedDict, total=False):
 
 ROUTING_TABLE: dict[str, RouteConfig] = {
     "default": {
-        "primary": "meta-llama/llama-3.3-70b-instruct:free",
-        "fallback": "openai/gpt-oss-120b:free",
-        "retries": 3,
-        "backoff": [40.0, 60.0, 90.0],
-    },
-    "sentiment": {
-        "primary": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "primary": "openai/gpt-oss-120b:free",
         "fallback": "z-ai/glm-4.5-air:free",
         "retries": 3,
-        "backoff": [40.0, 60.0, 90.0],
+        "backoff": [10.0, 25.0, 50.0],
+    },
+    "sentiment": {
+        "primary": "z-ai/glm-4.5-air:free",
+        "fallback": "openai/gpt-oss-120b:free",
+        "retries": 3,
+        "backoff": [10.0, 25.0, 50.0],
     },
     "synthesis": {
         "primary": "nvidia/nemotron-3-super-120b-a12b:free",
         "fallback": "openai/gpt-oss-120b:free",
         "retries": 3,
-        "backoff": [40.0, 60.0, 90.0],
+        "backoff": [10.0, 25.0, 50.0],
     },
 }
 

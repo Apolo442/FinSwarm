@@ -1981,6 +1981,21 @@ files = [
 ]
 
 [[package]]
+name = "wsproto"
+version = "1.3.2"
+description = "Pure-Python WebSocket protocol implementation"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "wsproto-1.3.2-py3-none-any.whl", hash = "sha256:61eea322cdf56e8cc904bd3ad7573359a242ba65688716b0710a5eb12beab584"},
+    {file = "wsproto-1.3.2.tar.gz", hash = "sha256:b86885dcf294e15204919950f666e06ffc6c7c114ca900b060d6e16293528294"},
+]
+
+[package.dependencies]
+h11 = ">=0.16.0,<1"
+
+[[package]]
 name = "yfinance"
 version = "0.2.66"
 description = "Download market data from Yahoo! Finance API"
@@ -2013,4 +2028,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "f02e3ad2d3c8080fd182dded7afb8014282a37bf843183c9860190d3c5ae631e"
+content-hash = "e5dc4f2b8caf7d489c0ab47d9e4ec972b98a91a01ae7a8c68de326ffc813a2a0"
