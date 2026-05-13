@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AGENT_ORDER, type AgentName, type AnalysisResult } from '../lib/types'
 import { fetchAnalysis } from '../lib/api'
 import { ReportHero } from './ReportHero'
@@ -13,7 +13,6 @@ export function HistoryModal({ jobId, onClose }: HistoryModalProps) {
   const [result, setResult]   = useState<AnalysisResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!jobId) { setResult(null); return }
@@ -37,7 +36,7 @@ export function HistoryModal({ jobId, onClose }: HistoryModalProps) {
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto px-6 py-10"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div ref={panelRef} className="w-full max-w-3xl flex flex-col gap-4">
+      <div className="w-full max-w-3xl flex flex-col gap-4">
         <div className="flex justify-end">
           <button
             onClick={onClose}

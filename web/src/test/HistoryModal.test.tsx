@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { HistoryModal } from '../components/HistoryModal'
 import * as api from '../lib/api'
@@ -22,6 +22,8 @@ const mockResult: AnalysisResult = {
 }
 
 describe('HistoryModal', () => {
+  afterEach(() => { vi.restoreAllMocks() })
+
   it('não renderiza nada quando jobId é null', () => {
     const { container } = render(<HistoryModal jobId={null} onClose={vi.fn()} />)
     expect(container).toBeEmptyDOMElement()
@@ -46,6 +48,15 @@ describe('HistoryModal', () => {
     const onClose = vi.fn()
     render(<HistoryModal jobId="job1" onClose={onClose} />)
     fireEvent.keyDown(document, { key: 'Escape' })
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('fecha ao clicar no backdrop', () => {
+    vi.spyOn(api, 'fetchAnalysis').mockImplementation(() => new Promise(() => {}))
+    const onClose = vi.fn()
+    const { container } = render(<HistoryModal jobId="job1" onClose={onClose} />)
+    const overlay = container.firstChild as HTMLElement
+    fireEvent.click(overlay, { target: overlay })
     expect(onClose).toHaveBeenCalled()
   })
 
