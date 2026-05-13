@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type Tone = 'ok' | 'failed' | 'neutral'
+type Tone = 'ok' | 'failed' | 'neutral' | 'running'
 
 interface BadgeProps {
   tone: Tone
@@ -8,15 +8,16 @@ interface BadgeProps {
 }
 
 const TONE_CLASSES: Record<Tone, string> = {
-  ok: 'bg-pure-white/10 text-pure-white',
-  failed: 'bg-status-failed/20 text-status-failed',
-  neutral: 'bg-pewter-accent text-silver-text',
+  ok: 'bg-data-blue/15 text-data-blue',
+  running: 'bg-data-blue/15 text-data-blue',
+  failed: 'bg-error/15 text-error',
+  neutral: 'bg-dark-frost text-dim-gray',
 }
 
 export function Badge({ tone, children }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-medium ${TONE_CLASSES[tone]}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[11px] tracking-wide ${TONE_CLASSES[tone]}`}
     >
       {children}
     </span>

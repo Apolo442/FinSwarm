@@ -9,11 +9,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary:
-    'bg-pure-white text-charcoal-canvas rounded-pill px-8 py-2.5 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed',
+    'bg-polar-white text-midnight-charcoal rounded-lg px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed',
   ghost:
-    'bg-transparent text-pure-white border border-pure-white rounded-pill px-4 py-1.5 hover:bg-pure-white/10 transition-colors',
+    'bg-transparent text-polar-white border border-polar-white/25 rounded-lg px-4 py-2 text-sm hover:bg-polar-white/5 transition-colors',
   sharp:
-    'bg-transparent text-pure-white rounded-sm px-2 hover:bg-pure-white/10 transition-colors',
+    'bg-transparent text-silver-dust rounded-md px-2 py-1 text-sm hover:text-polar-white transition-colors',
 }
 
 export function Button({ variant = 'primary', className = '', children, ...rest }: ButtonProps) {

@@ -6,7 +6,7 @@ import { ReportHero } from '../components/ReportHero'
 import { AgentSlot } from '../components/AgentSlot'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Button } from '../components/ui/Button'
-import { AGENT_ORDER } from '../lib/types'
+import { AGENT_ORDER, type AgentName } from '../lib/types'
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -14,7 +14,14 @@ function formatElapsed(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function LiveHeader({ ticker, running }: { ticker: string | null; running: boolean }) {
+interface LiveHeaderProps {
+  ticker: string | null
+  running: boolean
+  completedCount: number
+  currentAgent: AgentName | null
+}
+
+function LiveHeader({ ticker, running, completedCount, currentAgent }: LiveHeaderProps) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -24,35 +31,61 @@ function LiveHeader({ ticker, running }: { ticker: string | null; running: boole
     return () => clearInterval(id)
   }, [running])
 
+  const pct = Math.round((completedCount / 7) * 100)
+
   return (
-    <section className="relative flex flex-col gap-4 pb-10 border-b border-silver-text/15">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full opacity-25 blur-3xl"
-        style={{ background: 'var(--gradient-golden)' }}
-      />
-      <span className="text-xs uppercase tracking-[0.2em] text-stone-text">
-        Em andamento
-      </span>
-      <h1
-        className="font-ivy text-[88px] leading-none text-transparent bg-clip-text"
-        style={{ backgroundImage: 'var(--gradient-golden)' }}
-      >
-        Analisando
-      </h1>
-      <div className="flex items-baseline gap-6 mt-2">
-        {ticker && (
-          <span className="text-3xl text-pure-white tracking-tight tabular-nums">
-            {ticker}
+    <section className="glass rounded-lg p-5 flex flex-col gap-5">
+      {/* Top row: label + timer */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-data-blue">
+            Em andamento
           </span>
-        )}
-        <span className="font-ivy text-3xl tabular-nums text-silver-text">
-          {formatElapsed(elapsed)}
-        </span>
-        <span className="text-xs text-ash-text ml-auto">
-          análise completa em ~10 min
-        </span>
+          <h1 className="text-[40px] font-semibold leading-none tracking-[-0.031px] text-polar-white">
+            {ticker ?? 'Analisando'}
+          </h1>
+        </div>
+        <div className="text-right flex flex-col gap-0.5">
+          <span className="font-mono text-2xl tabular-nums text-polar-white">
+            {formatElapsed(elapsed)}
+          </span>
+        </div>
       </div>
+
+      {/* Progress bar — 7 segments */}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-1">
+          {AGENT_ORDER.map((_, i) => (
+            <div
+              key={i}
+              className={`flex-1 h-1 rounded-full transition-all duration-500 ${
+                i < completedCount ? 'bg-data-blue' : 'bg-dark-frost'
+              }`}
+            />
+          ))}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[11px] text-dim-gray">
+            {completedCount}/7 agentes concluídos
+          </span>
+          <span className="font-mono text-[11px] text-data-blue tabular-nums">
+            {pct}%
+          </span>
+        </div>
+      </div>
+
+      {/* Current agent label */}
+      {currentAgent && (
+        <div className="flex items-center gap-2 pt-1 border-t border-light-gray/15">
+          <span className="h-1.5 w-1.5 rounded-full bg-data-blue animate-pulse-blue shrink-0" />
+          <span className="text-sm text-silver-dust">
+            Processando agora
+          </span>
+          <span className="font-mono text-xs text-data-blue ml-auto">
+            {currentAgent}
+          </span>
+        </div>
+      )}
     </section>
   )
 }
@@ -62,13 +95,11 @@ export function Analysis() {
   const navigate = useNavigate()
   const location = useLocation()
   const ticker = (location.state as { ticker?: string } | null)?.ticker ?? null
-  const { agents, result, error, connectionLost, reconnect } = useAnalysis(
-    jobId ?? ''
-  )
+  const { agents, currentAgent, result, error, connectionLost, reconnect } = useAnalysis(jobId ?? '')
 
   if (!jobId) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center px-6">
         <ErrorBanner
           message="ID da análise não encontrado."
           action={{ label: 'Nova análise', onClick: () => navigate('/') }}
@@ -77,27 +108,58 @@ export function Analysis() {
     )
   }
 
+  const completedCount = AGENT_ORDER.filter(
+    (n) => agents[n].status === 'ok' || agents[n].status === 'failed'
+  ).length
+
   return (
-    <main className="min-h-screen px-6 py-10">
+    <main className="min-h-screen px-6 py-8">
       <div className="max-w-[1216px] mx-auto">
-        <header className="flex items-center justify-between mb-10">
+        {/* Top bar */}
+        <header className="flex items-center justify-between mb-8 pb-4 border-b border-light-gray/15">
           <Button variant="sharp" onClick={() => navigate('/')}>
             ← Nova análise
           </Button>
-          <span className="text-xs uppercase tracking-[0.2em] text-stone-text">
+          <span className="font-mono text-[11px] uppercase tracking-widest text-dim-gray">
             FinSwarm · multi-agente B3
           </span>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-16">
-          <aside className="lg:sticky lg:top-10 lg:self-start">
-            <span className="block text-xs uppercase tracking-[0.2em] text-stone-text mb-6">
-              Pipeline
-            </span>
-            <AgentTimeline agents={agents} />
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
+          {/* Sidebar — glassmorphism panel */}
+          <aside className="lg:sticky lg:top-8 lg:self-start">
+            <div className="glass rounded-lg p-4 flex flex-col gap-5">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-dim-gray">
+                  Pipeline
+                </span>
+                <span className="font-mono text-[11px] text-data-blue tabular-nums">
+                  {completedCount}/7
+                </span>
+              </div>
+
+              {/* Timeline */}
+              <AgentTimeline agents={agents} />
+
+              {/* Overall progress bar */}
+              <div className="pt-3 border-t border-light-gray/15 flex flex-col gap-2">
+                <div className="h-1 bg-dark-frost rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-data-blue rounded-full transition-all duration-500"
+                    style={{ width: `${(completedCount / 7) * 100}%` }}
+                  />
+                </div>
+                <div className="flex justify-between font-mono text-[10px] text-dim-gray">
+                  <span>progresso</span>
+                  <span>{Math.round((completedCount / 7) * 100)}%</span>
+                </div>
+              </div>
+            </div>
           </aside>
 
-          <section className="flex flex-col gap-8 min-w-0">
+          {/* Main content */}
+          <section className="flex flex-col gap-4 min-w-0">
             {error && (
               <ErrorBanner
                 message={error}
@@ -114,10 +176,15 @@ export function Analysis() {
             {result ? (
               <ReportHero result={result} />
             ) : (
-              <LiveHeader ticker={ticker} running={!error} />
+              <LiveHeader
+                ticker={ticker}
+                running={!error}
+                completedCount={completedCount}
+                currentAgent={currentAgent}
+              />
             )}
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2.5">
               {AGENT_ORDER.map((name) => (
                 <AgentSlot
                   key={name}

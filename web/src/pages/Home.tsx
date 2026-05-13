@@ -27,15 +27,21 @@ export function Home() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-[1216px] flex flex-col items-center gap-8 text-center">
-        <h1 className="font-ivy text-[88px] leading-none text-pure-white tracking-tight">
-          Análise multi-agente para a B3
-        </h1>
-        <p className="text-xl text-porcelain-text max-w-2xl">
-          Sete agentes LLM avaliam técnico, fundamentos, sentimento e risco do ativo
-          para produzir uma recomendação em minutos.
-        </p>
-        <div className="w-full max-w-xl flex flex-col gap-3 items-center">
+      <div className="w-full max-w-2xl flex flex-col items-start gap-8">
+        <div className="flex flex-col gap-4">
+          <span className="font-mono text-[11px] uppercase tracking-widest text-data-blue">
+            FinSwarm · B3
+          </span>
+          <h1 className="text-[56px] font-semibold leading-[1.14] tracking-[-0.036px] text-polar-white">
+            Análise multi-agente para a B3
+          </h1>
+          <p className="text-base text-silver-dust max-w-lg">
+            Sete agentes LLM avaliam técnico, fundamentos, sentimento e risco
+            para produzir uma recomendação fundamentada.
+          </p>
+        </div>
+
+        <div className="w-full flex flex-col gap-3">
           {error && <ErrorBanner message={error} />}
           <TickerInput onSubmit={handleSubmit} disabled={submitting} />
         </div>

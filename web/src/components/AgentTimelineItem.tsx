@@ -9,67 +9,79 @@ interface AgentTimelineItemProps {
   isLast: boolean
 }
 
-const STATUS_RING_CLASSES: Record<AgentStatus, string> = {
-  pending: 'border-silver-text/25 text-stone-text bg-obsidian-surface',
-  running: 'border-golden text-pure-white bg-pewter-accent animate-pulse-golden',
-  ok: 'border-pure-white text-pure-white bg-pewter-accent',
-  failed: 'border-status-failed text-status-failed bg-pewter-accent',
+const STATUS_BADGE: Record<AgentStatus, string> = {
+  pending: 'border border-light-gray/25 text-dim-gray bg-transparent',
+  running: 'border border-data-blue text-data-blue bg-data-blue/10 animate-pulse-blue shadow-[0_0_12px_rgba(103,152,255,0.25)]',
+  ok:      'border border-data-blue/50 text-data-blue bg-data-blue/8',
+  failed:  'border border-error text-error bg-error/8',
 }
 
-const STATUS_LABEL_CLASSES: Record<AgentStatus, string> = {
-  pending: 'text-ash-text',
-  running: 'text-pure-white',
-  ok: 'text-pure-white',
-  failed: 'text-status-failed',
+const STATUS_LABEL: Record<AgentStatus, string> = {
+  pending: 'text-dim-gray',
+  running: 'text-polar-white font-medium',
+  ok:      'text-silver-dust',
+  failed:  'text-error',
 }
 
 const STATUS_SUB: Record<AgentStatus, string> = {
   pending: 'aguardando',
   running: 'em execução',
-  ok: 'concluído',
-  failed: 'falhou',
+  ok:      'concluído',
+  failed:  'falhou',
 }
 
-export function AgentTimelineItem({
-  agent,
-  index,
-  status,
-  elapsed,
-  isLast,
-}: AgentTimelineItemProps) {
+const STATUS_SUB_COLOR: Record<AgentStatus, string> = {
+  pending: 'text-dim-gray',
+  running: 'text-data-blue',
+  ok:      'text-dim-gray',
+  failed:  'text-error',
+}
+
+export function AgentTimelineItem({ agent, index, status, elapsed, isLast }: AgentTimelineItemProps) {
+  const isRunning = status === 'running'
+
   return (
-    <li className="relative flex items-stretch gap-4 pb-6 last:pb-0">
-      <div className="relative flex flex-col items-center">
+    <li className="relative flex items-stretch gap-3 pb-1 last:pb-0">
+      {/* Glass highlight on running item */}
+      {isRunning && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-[-12px] top-0 bottom-4 rounded-lg glass-blue"
+        />
+      )}
+
+      {/* Number badge + connector */}
+      <div className="relative z-10 flex flex-col items-center shrink-0">
         <span
           data-testid={`agent-status-${agent}`}
           data-status={status}
-          className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-pill border tabular-nums text-sm font-medium ${STATUS_RING_CLASSES[status]}`}
+          className={`flex h-7 w-7 items-center justify-center rounded-lg font-mono text-[11px] font-medium shrink-0 transition-all duration-300 ${STATUS_BADGE[status]}`}
         >
           {String(index + 1).padStart(2, '0')}
         </span>
         {!isLast && (
           <span
             aria-hidden
-            className={`flex-1 w-px mt-1 ${
-              status === 'ok' || status === 'failed'
-                ? 'bg-silver-text/40'
-                : 'bg-silver-text/15'
+            className={`w-px flex-1 mt-1 mb-1 transition-colors duration-500 ${
+              status === 'ok' ? 'bg-data-blue/25' : 'bg-light-gray/15'
             }`}
           />
         )}
       </div>
-      <div className="flex-1 pt-1.5 flex flex-col gap-0.5">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className={`text-base font-medium ${STATUS_LABEL_CLASSES[status]}`}>
+
+      {/* Label area */}
+      <div className="relative z-10 flex-1 flex flex-col gap-0.5 py-0.5 pb-4 min-w-0">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className={`text-sm transition-colors duration-300 ${STATUS_LABEL[status]}`}>
             {AGENT_LABELS[agent]}
           </span>
           {elapsed !== null && (
-            <span className="text-xs text-stone-text tabular-nums">
+            <span className="font-mono text-[11px] text-dim-gray tabular-nums shrink-0">
               {elapsed.toFixed(1)}s
             </span>
           )}
         </div>
-        <span className="text-xs uppercase tracking-wider text-stone-text">
+        <span className={`font-mono text-[10px] uppercase tracking-widest transition-colors duration-300 ${STATUS_SUB_COLOR[status]}`}>
           {STATUS_SUB[status]}
         </span>
       </div>

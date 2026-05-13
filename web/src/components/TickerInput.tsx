@@ -30,8 +30,8 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-xl">
-      <div className="flex gap-3 w-full">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-md">
+      <div className="flex gap-2 w-full">
         <input
           type="text"
           placeholder="PETR4.SA"
@@ -40,14 +40,14 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
           disabled={disabled}
           aria-label="Ticker"
           aria-describedby={error ? 'ticker-error' : undefined}
-          className="flex-1 bg-transparent text-pure-white border border-pure-white rounded-pill px-5 py-2.5 placeholder:text-ash-text focus:outline-none focus:border-golden disabled:opacity-50"
+          className="flex-1 bg-dark-frost text-polar-white border border-light-gray/50 rounded-lg px-4 py-2.5 text-sm font-mono placeholder:text-dim-gray focus:outline-none focus:border-data-blue disabled:opacity-40 transition-colors"
         />
         <Button type="submit" disabled={disabled}>
           Analisar
         </Button>
       </div>
       {error && (
-        <p id="ticker-error" role="alert" className="text-sm text-status-failed">
+        <p id="ticker-error" role="alert" className="text-sm text-error">
           {error}
         </p>
       )}
