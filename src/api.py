@@ -1,19 +1,28 @@
 from __future__ import annotations
 import asyncio
+from contextlib import asynccontextmanager
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import field_validator
 
+from src.db import init_db, save_analysis, list_analyses, get_analysis
 from src.llm.client import LLMClient
-from src.models import AnalysisRequest, AnalysisResult, JobStatus, WsEvent
+from src.models import AnalysisRequest, AnalysisResult, AnalysisRow, JobStatus, WsEvent
 from src.orchestrator import run_analysis
 
 load_dotenv()
 
-app = FastAPI(title="FinSwarm", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+
+app = FastAPI(title="FinSwarm", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +49,19 @@ async def health():
     return {"status": "ok", "version": "0.1.0"}
 
 
+@app.get("/analyses", response_model=list[AnalysisRow])
+async def get_analyses():
+    return await list_analyses()
+
+
+@app.get("/analyses/{job_id}", response_model=AnalysisResult)
+async def get_analysis_result(job_id: str):
+    result = await get_analysis(job_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="análise não encontrada")
+    return result
+
+
 @app.post("/analyze", status_code=202, response_model=JobStatus)
 async def start_analysis(request: AnalysisRequestValidated, background_tasks: BackgroundTasks):
     job_id = uuid4().hex[:8]
@@ -59,6 +81,7 @@ async def _run_and_store(job_id: str, ticker: str, llm: LLMClient, queue: asynci
         result = await run_analysis(ticker, llm, job_id=job_id, progress_callback=push_event)
         _results[job_id] = result
         await queue.put(WsEvent(event="done", result=result, elapsed=result.elapsed_seconds))
+        await save_analysis(result)
     except Exception as exc:
         _results[job_id] = exc
         await queue.put(WsEvent(event="error", message=str(exc)))
