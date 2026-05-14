@@ -13,6 +13,14 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 }
 
+// Mock fetch for /chart/* routes so tests that render PriceChart don't hit the network
+const _originalFetch = global.fetch
+global.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url
+  if (url.includes('/chart/')) return Promise.resolve(new Response('[]', { status: 200 }))
+  return _originalFetch(input, init)
+}) as typeof fetch
+
 vi.mock('lightweight-charts', () => ({
   createChart: () => ({
     addAreaSeries: () => ({ setData: vi.fn(), applyOptions: vi.fn() }),

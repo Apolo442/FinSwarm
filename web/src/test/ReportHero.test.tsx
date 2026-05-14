@@ -5,40 +5,34 @@ import type { AnalysisResult } from '../lib/types'
 
 function makeResult(overrides: Partial<AnalysisResult> = {}): AnalysisResult {
   return {
-    job_id: 'abc',
-    ticker: 'PETR4.SA',
-    timestamp: '2026-05-12T12:00:00Z',
-    recommendation: 'COMPRAR',
-    confidence: 0.78,
-    risk_score: 42,
-    stop_loss_pct: 5.2,
-    agents: {} as AnalysisResult['agents'],
-    elapsed_seconds: 540,
-    cost_usd: 0,
-    ...overrides,
+    job_id: 'abc', ticker: 'PETR4.SA', timestamp: '2026-05-12T12:00:00Z',
+    recommendation: 'COMPRAR', confidence: 0.78, risk_score: 42,
+    stop_loss_pct: 5.2, agents: {} as AnalysisResult['agents'],
+    elapsed_seconds: 54, cost_usd: 0, ...overrides,
   }
 }
 
 describe('ReportHero', () => {
-  it('mostra recomendação, ticker e stats formatados', () => {
+  it('mostra recomendação em Solar Flare', () => {
     render(<ReportHero result={makeResult()} />)
-    expect(screen.getByRole('heading', { name: 'COMPRAR' })).toBeInTheDocument()
-    expect(screen.getByText('PETR4.SA')).toBeInTheDocument()
-    expect(screen.getByText('78%')).toBeInTheDocument()
-    expect(screen.getByText('42/100')).toBeInTheDocument()
-    expect(screen.getByText('5.2%')).toBeInTheDocument()
+    const el = screen.getByTestId('recommendation')
+    expect(el).toHaveTextContent('COMPRAR')
+    expect(el).toHaveStyle({ color: '#ffa16c' })
   })
 
-  it('aplica data-recommendation para estilização condicional', () => {
-    const { rerender } = render(<ReportHero result={makeResult({ recommendation: 'VENDER' })} />)
-    expect(screen.getByRole('heading', { name: 'VENDER' })).toHaveAttribute(
-      'data-recommendation',
-      'VENDER'
-    )
-    rerender(<ReportHero result={makeResult({ recommendation: 'MANTER' })} />)
-    expect(screen.getByRole('heading', { name: 'MANTER' })).toHaveAttribute(
-      'data-recommendation',
-      'MANTER'
-    )
+  it('mostra ticker e confiança', () => {
+    render(<ReportHero result={makeResult()} />)
+    expect(screen.getByText(/PETR4\.SA/)).toBeInTheDocument()
+    expect(screen.getAllByText(/78%/).length).toBeGreaterThan(0)
+  })
+
+  it('mostra risco', () => {
+    render(<ReportHero result={makeResult()} />)
+    expect(screen.getByText(/risco 42/i)).toBeInTheDocument()
+  })
+
+  it('renderiza PriceChart', () => {
+    render(<ReportHero result={makeResult()} />)
+    expect(screen.getByText('3M')).toBeInTheDocument()
   })
 })
