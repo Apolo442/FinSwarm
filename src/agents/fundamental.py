@@ -4,8 +4,10 @@ from src.data.fundamentus import FundamentusData
 
 class FundamentalAgent(BaseAgent):
     routing_key = "default"
+    _last_fundamentals: FundamentusData | None = None
 
     def build_messages(self, fundamentals: FundamentusData) -> list[dict]:
+        self._last_fundamentals = fundamentals
         prompt = f"""Você é um analista fundamentalista especializado no mercado brasileiro.
 
 Dados fundamentalistas de {fundamentals.ticker}:
@@ -26,4 +28,14 @@ Analise e retorne APENAS este JSON (sem markdown):
         return [{"role": "user", "content": prompt}]
 
     def parse_output(self, content: str) -> dict:
-        return self._extract_json(content)
+        result = self._extract_json(content)
+        if self._last_fundamentals is not None:
+            f = self._last_fundamentals
+            result["_metrics"] = {
+                "pl":               round(f.pl, 2),
+                "pvp":              round(f.pvp, 2),
+                "roe_pct":          round(f.roe * 100, 1),
+                "divida_bruta_pl":  round(f.divida_bruta_pl, 2),
+                "margem_ebit_pct":  round(f.margem_ebit * 100, 1),
+            }
+        return result
