@@ -1,29 +1,38 @@
-# FinSwarm — Status do Projeto (2026-05-13)
+# FinSwarm — Status do Projeto (2026-05-14)
 
 ## Onde estamos
 
 Branch ativo: **`feat/web`** (40+ commits à frente de `main`).
 
-- Backend FinSwarm (Python) — completo e funcional. 44+ testes unitários verdes.
+- Backend FinSwarm (Python) — completo e funcional. **46 testes unitários verdes** (133s).
 - Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, **49 testes verdes**, `npm run build` verde.
 - Integração e2e backend↔frontend — **funcional**. WebSocket (Chrome ↔ uvicorn) resolvido com `--ws wsproto` + bypass direto no `useAnalysis.ts`.
-- Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db` e exibidas no drawer de histórico na Home.
-- **Visual Overhaul (2026-05-13) — implementado:**
-  - Nova paleta: Solar Flare `#ffa16c`, Cosmic Blue `#479ffa`, Emerald Profit `#4ebe96`, fundo `#131313`
-  - Blobs orgânicos atualizados para #ffa16c e #868f97
-  - `StockQuickPicks` — grid 5×2 das 10 principais ações B3 na Home
-  - `HistoryDrawer` — logos (iniciais Cosmic Blue) + barra de confiança por recomendação
-  - `ReportHero` — layout Magazine: recomendação Solar Flare + `PriceChart` TradingView interativo
-  - `PriceChart` — gráfico AreaSeries TradingView (lightweight-charts v4) com range selector 1M/3M/6M/1A
-  - `AgentBento` — bento grid 3 colunas com 7 cards visuais (RSI arc, MACD bars, gauge sentimento, dial risco)
-  - `FundamentalAgent` — expõe `_metrics` (pl, pvp, roe_pct, divida_bruta_pl, margem_ebit_pct) no raw
-  - Backend: `GET /chart/{ticker}?period=3mo&interval=1d` (yfinance OHLCV)
+- Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db`.
+- **Visual Overhaul (2026-05-13) — implementado + refinamentos aplicados:**
+  - Nova paleta Solar Flare, `CompanyLogo`, `HistoryModal` tela cheia, `PriceChart` TradingView, `AgentBento` bento grid.
+- **Home redesign (2026-05-14) — implementado:**
+  - Layout coluna única centrado; sem `HistoryDrawer`.
+  - Cards B3 (`StockQuickPicks`) e `TickerInput` **navegam para `/stock/:ticker`** em vez de iniciar análise direto.
+  - Cards dinâmicos para tickers já analisados buscados de `GET /analyses` no mount.
+- **StockDetail v1 (2026-05-14) — implementado** em `/stock/:ticker`:
+  - Cabeçalho com `CompanyLogo` + nome + badge B3 + botão ← Voltar.
+  - Bloco de cotação (preço, variação, fechamento anterior) via `GET /quote/:ticker`.
+  - `PriceChart` embutido (1M/3M/6M/1A).
+  - 5 stat cards (Vol., Mkt Cap, P/L, P/VP, DY).
+  - CTA "Analisar com FinSwarm" que navega para `/analysis/:jobId`.
+- **Backend: `GET /quote/:ticker`** — yfinance `fast_info` + `.info` (P/L, P/VP, DY, short_name).
+  - **Atenção:** `dividendYield` do yfinance para ações BR já vem em % (ex: `8.66`), não decimal. Não multiplicar por 100.
+- **StockDetail v2 — spec + plano prontos para execução (Fases A–G, 40 tarefas):**
+  - 8 tabs: Visão geral, Finanças, Notícias, Comunidade FinSwarm, Sinais técnicos, Previsões, Sazonais, Títulos.
+  - Spec: `docs/superpowers/specs/2026-05-14-stock-detail-tabs-design.md`
+  - Plano: `docs/superpowers/plans/2026-05-14-stock-detail-tabs.md`
+  - Referência estrutural: `relatorio-tradingview-bbas3.md` (análise detalhada da página BBAS3 no TradingView)
 
 ## Stack
 
 - **Backend:** Python 3.12, FastAPI, OpenRouter via OpenAI SDK, yfinance, fundamentus, GNews, 7 agentes orquestrados com asyncio, aiosqlite.
 - **Frontend:** Vite 5, React 18, TypeScript 5, Tailwind v4 (`@tailwindcss/vite`), React Router 6, Vitest + RTL + mock-socket.
-- **Estilo visual:** `DESIGN V2.md` (raiz do repo) — referência de design ativo. Nova paleta aplicada em `index.css`.
+- **Estilo visual:** `style.md` (raiz do repo) — referência de design ativo (v2 Solar Flare palette). `index.css` aplica os tokens.
 
 ## Como rodar
 
@@ -43,46 +52,49 @@ cd web && npm run dev
 ```
 finswarm/
 ├── src/                              # backend Python
-│   ├── api.py                        # FastAPI + CORS + lifespan (init_db)
+│   ├── api.py                        # FastAPI + CORS + lifespan (init_db) + GET /chart/{ticker}
 │   ├── db.py                         # SQLite via aiosqlite (init, save, list, get)
 │   ├── orchestrator.py
 │   ├── models.py                     # AnalysisResult, AnalysisRow, WsEvent, ...
-│   ├── agents/                       # 7 agentes
+│   ├── agents/                       # 7 agentes (fundamental expõe _metrics)
 │   ├── data/                         # yfinance, fundamentus, news
 │   └── llm/
 │       ├── client.py                 # AsyncOpenAI → OpenRouter
 │       ├── routing.py                # ROUTING_TABLE
 │       └── cache.py
 ├── web/                              # frontend Vite
-│   ├── vite.config.ts                # proxy /analyze /analyses /health /chart /ws
+│   ├── vite.config.ts                # proxy /analyze /analyses /health /chart /quote /ws
 │   ├── src/
-│   │   ├── main.tsx, App.tsx
-│   │   ├── index.css                 # @theme tailwind v4 com tokens style.md
+│   │   ├── main.tsx, App.tsx         # blobs orgânicos Solar Flare + Slate + rota /stock/:ticker
+│   │   ├── index.css                 # @theme tailwind v4 + .glass/.glass-inner/.glass-accent + animações
 │   │   ├── pages/
-│   │   │   ├── Home.tsx              # grid 2 colunas: hero+input | HistoryDrawer
-│   │   │   └── Analysis.tsx          # split timeline + AgentSlots
+│   │   │   ├── Home.tsx              # coluna única; StockQuickPicks+TickerInput → /stock/:ticker
+│   │   │   ├── StockDetail.tsx       # v1: cotação + PriceChart + stats + CTA analisar
+│   │   │   └── Analysis.tsx          # split timeline + AgentSlots (ao vivo) | ReportHero+AgentBento (resultado)
 │   │   ├── components/
 │   │   │   ├── TickerInput.tsx
 │   │   │   ├── AgentTimeline.tsx
 │   │   │   ├── AgentTimelineItem.tsx
-│   │   │   ├── AgentSlot.tsx         # apenas tela ao vivo (running state)
+│   │   │   ├── AgentSlot.tsx         # estado ao vivo com .glass-accent quando running
 │   │   │   ├── AgentBento.tsx        # bento grid 7 agentes (resultado final)
 │   │   │   ├── AgentCard.tsx         # legado, mantido p/ tests
+│   │   │   ├── CompanyLogo.tsx       # favicon Google + fallback iniciais
 │   │   │   ├── PriceChart.tsx        # gráfico TradingView (lightweight-charts v4)
-│   │   │   ├── StockQuickPicks.tsx   # grid 5x2 quick picks B3
+│   │   │   ├── StockQuickPicks.tsx   # grid 5x2 quick picks B3 com CompanyLogo + extraTickers prop
 │   │   │   ├── ReportHero.tsx        # layout Magazine com PriceChart
 │   │   │   ├── ErrorBanner.tsx
-│   │   │   ├── HistoryDrawer.tsx     # logos + barra de confiança
-│   │   │   ├── HistoryModal.tsx      # modal overlay com AgentBento
+│   │   │   ├── HistoryDrawer.tsx     # logos reais + barra de confiança
+│   │   │   ├── HistoryModal.tsx      # tela cheia: ← Voltar, 2 colunas 380px+1fr
 │   │   │   └── ui/{Button,Card,Badge}.tsx
 │   │   └── lib/
-│   │       ├── types.ts              # AGENT_ORDER, AnalysisResult, AnalysisRow, WsEvent
+│   │       ├── types.ts              # AGENT_ORDER, AnalysisResult, AnalysisRow, WsEvent, QuoteData
 │   │       ├── agentLabels.ts
-│   │       ├── companyMeta.ts        # mapa ticker → nome + iniciais
-│   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis, fetchChart
+│   │       ├── companyMeta.ts        # mapa ticker → nome + iniciais + COMPANY_DOMAIN
+│   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis, fetchChart, fetchQuote
 │   │       └── useAnalysis.ts        # hook WebSocket
 │   └── test/                         # 49 testes vitest
-├── style.md                          # referência de design (ÚNICA fonte de verdade visual)
+├── relatorio-tradingview-bbas3.md    # análise estrutural do TradingView BBAS3 (referência v2)
+├── style.md                          # design system v2 (ÚNICA fonte de verdade visual)
 ├── data/                             # ignorado pelo git
 │   └── analyses.db                   # SQLite — criado automaticamente
 ├── docs/
@@ -90,10 +102,12 @@ finswarm/
 │   └── superpowers/
 │       ├── specs/
 │       │   ├── 2026-05-12-finswarm-web-design.md
-│       │   └── 2026-05-13-persistence-history-design.md
+│       │   ├── 2026-05-13-persistence-history-design.md
+│       │   └── 2026-05-14-stock-detail-tabs-design.md  # spec das 8 tabs (v2)
 │       └── plans/
 │           ├── 2026-05-12-finswarm-web.md
-│           └── 2026-05-13-persistence-history.md
+│           ├── 2026-05-13-persistence-history.md
+│           └── 2026-05-14-stock-detail-tabs.md         # plano 40 tarefas fases A–G
 └── pyproject.toml                    # + wsproto, aiosqlite, pytest-timeout
 ```
 
@@ -121,6 +135,32 @@ finswarm/
 - `HistoryModal` overlay com relatório completo ao clicar num item do histórico.
 - Drawer recarrega automaticamente ao retornar de uma análise (via `location.key`).
 
+### [x] Refinamentos visuais (2026-05-13)
+
+- `CompanyLogo` com favicons reais via Google Favicons + fallback para iniciais.
+- `HistoryDrawer`: cursor-pointer nos chips, overflow da data corrigido, sem scrollbar horizontal.
+- `HistoryModal`: virou tela cheia, fecha só via "← Voltar", layout 2 colunas dashboard.
+- `PriceChart`: largura mínima 100px + requestAnimationFrame corrige gráfico vazio em modal.
+- `Home`: textos `#e6e6e6`/`#cccccc` em vez de branco puro.
+
+### [x] Home redesign + StockDetail v1 (2026-05-14)
+
+- Home: layout coluna única, sem HistoryDrawer, cards navegam para `/stock/:ticker`.
+- `StockDetail` v1 em `/stock/:ticker`: cotação ao vivo, PriceChart, 5 stats, CTA analisar.
+- Backend: `GET /quote/:ticker` via yfinance `fast_info`.
+
+### [ ] StockDetail v2 — 8 tabs estilo TradingView
+
+**Plano:** `docs/superpowers/plans/2026-05-14-stock-detail-tabs.md` (40 tarefas, Fases A–G)
+
+- Fase A: cache SQLite para cotações + dados de ações
+- Fase B: 6 endpoints backend (technicals, financials, news, community, seasonals, forecast)
+- Fase C: `stockApi.ts` + `useStockData` hook (progressive loading, session cache)
+- Fase D: widgets SVG reutilizáveis (MiniLineChart, MiniBarChart, GaugeWidget, etc.)
+- Fase E: 8 painéis de tab (OverviewPanel, FinancialsPanel, NewsPanel, etc.)
+- Fase F: `StockDetail` orquestrador reescrito com sticky tabs + CTA flutuante
+- Fase G: polish final (skeleton loaders, empty states, a11y)
+
 ## Fora do MVP (não priorizado)
 
 - Autenticação
@@ -133,9 +173,9 @@ finswarm/
 **Ler nesta ordem:**
 
 1. **`docs/STATUS.md`** (este arquivo) — começa aqui sempre.
-2. **`style.md`** — referência visual obrigatória pra qualquer mexida em UI.
-3. **`docs/superpowers/specs/2026-05-12-finswarm-web-design.md`** — spec original do frontend.
-4. **`docs/superpowers/plans/2026-05-12-finswarm-web.md`** — plano do frontend.
+2. **`style.md`** — referência visual obrigatória pra qualquer mexida em UI (design system v2).
+3. **`docs/superpowers/specs/2026-05-14-stock-detail-tabs-design.md`** — spec das 8 tabs (próximo milestone).
+4. **`docs/superpowers/plans/2026-05-14-stock-detail-tabs.md`** — plano 40 tarefas Fases A–G (executar este).
 
 **Pesquisar no log:**
 
