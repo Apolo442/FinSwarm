@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import field_validator
 
 from src.db import init_db, save_analysis, list_analyses, get_analysis
+from src.cache import init_cache_db
+from src.stock_service import get_overview as _svc_overview
 from src.llm.client import LLMClient
 from src.models import AnalysisRequest, AnalysisResult, AnalysisRow, JobStatus, WsEvent
 from src.orchestrator import run_analysis
@@ -24,6 +26,7 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    await init_cache_db()
     yield
 
 
@@ -147,6 +150,11 @@ async def get_quote(ticker: str):
             "short_name": info.get("shortName") or info.get("longName"),
         }
     return await asyncio.to_thread(_fetch)
+
+
+@app.get("/stock/{ticker}/overview")
+async def stock_overview(ticker: str):
+    return await _svc_overview(ticker)
 
 
 @app.get("/chart/{ticker}")
