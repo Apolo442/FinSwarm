@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AnalysisRow, Recommendation } from '../lib/types'
 import { fetchAnalyses } from '../lib/api'
+import { getCompanyMeta } from '../lib/companyMeta'
 
 interface HistoryDrawerProps {
   onSelect: (jobId: string) => void
@@ -9,15 +10,21 @@ interface HistoryDrawerProps {
 type Filter = 'ALL' | Recommendation
 
 const REC_CHIP: Record<Recommendation, string> = {
-  COMPRAR: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
-  MANTER:  'border-yellow-500/25 text-yellow-400 bg-yellow-500/8',
-  VENDER:  'border-red-500/25 text-red-400 bg-red-500/8',
+  COMPRAR: 'border-[rgba(78,190,150,0.22)] text-[#4ebe96] bg-[rgba(78,190,150,0.1)]',
+  MANTER:  'border-[rgba(233,168,74,0.2)]  text-[#e9a84a] bg-[rgba(233,168,74,0.1)]',
+  VENDER:  'border-[rgba(224,84,84,0.2)]   text-[#e05454] bg-[rgba(224,84,84,0.1)]',
 }
 
 const REC_LABEL: Record<Recommendation, string> = {
   COMPRAR: 'comprar',
   MANTER:  'manter',
   VENDER:  'vender',
+}
+
+const REC_BAR_COLOR: Record<Recommendation, string> = {
+  COMPRAR: '#4ebe96',
+  MANTER:  '#e9a84a',
+  VENDER:  '#e05454',
 }
 
 function formatDate(iso: string): string {
@@ -57,11 +64,11 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
   return (
     <div className="glass rounded-lg flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-light-gray/15">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-dim-gray">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07]">
+        <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: '#868f97' }}>
           Histórico
         </span>
-        <span className="font-mono text-[11px] text-data-blue tabular-nums">{filtered.length}</span>
+        <span className="font-mono text-[11px] tabular-nums" style={{ color: '#479ffa' }}>{filtered.length}</span>
       </div>
 
       {/* Search */}
@@ -71,7 +78,11 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
           placeholder="Buscar ticker..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-dark-frost border border-light-gray/15 rounded-md px-3 py-1.5 font-mono text-[12px] text-polar-white placeholder:text-dim-gray focus:outline-none focus:border-data-blue/50"
+          className="w-full rounded-md px-3 py-1.5 font-mono text-[12px] focus:outline-none"
+          style={{
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
+            color: '#ffffff',
+          }}
         />
       </div>
 
@@ -81,11 +92,12 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md border transition-colors ${
-              filter === f.value
-                ? 'border-data-blue/50 text-data-blue bg-data-blue/10'
-                : 'border-light-gray/15 text-dim-gray hover:border-light-gray/30'
-            }`}
+            className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md border transition-colors"
+            style={{
+              borderColor: filter === f.value ? 'rgba(71,159,250,0.4)' : 'rgba(255,255,255,0.1)',
+              color: filter === f.value ? '#479ffa' : '#868f97',
+              background: filter === f.value ? 'rgba(71,159,250,0.08)' : 'transparent',
+            }}
           >
             {f.label}
           </button>
@@ -95,37 +107,75 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
       {/* List */}
       <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-1.5 min-h-0">
         {error && (
-          <p className="font-mono text-[10px] text-error text-center mt-4">
+          <p className="font-mono text-[10px] text-center mt-4" style={{ color: '#e05454' }}>
             Erro ao carregar histórico
           </p>
         )}
         {!error && rows.length === 0 && (
-          <p className="font-mono text-[10px] text-dim-gray text-center mt-8">
+          <p className="font-mono text-[10px] text-center mt-8" style={{ color: '#868f97' }}>
             Nenhuma análise ainda
           </p>
         )}
         {!error && rows.length > 0 && filtered.length === 0 && (
-          <p className="font-mono text-[10px] text-dim-gray text-center mt-8">
+          <p className="font-mono text-[10px] text-center mt-8" style={{ color: '#868f97' }}>
             Nenhum resultado
           </p>
         )}
-        {filtered.map(row => (
-          <button
-            key={row.job_id}
-            onClick={() => onSelect(row.job_id)}
-            className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md border border-light-gray/10 hover:border-data-blue/30 hover:bg-data-blue/5 transition-colors"
-          >
-            <span className="font-mono text-[12px] font-bold text-data-blue min-w-[52px]">
-              {row.ticker}
-            </span>
-            <span className={`font-mono text-[9px] font-semibold px-2 py-0.5 rounded-full border ${REC_CHIP[row.recommendation]}`}>
-              {REC_LABEL[row.recommendation]}
-            </span>
-            <span className="font-mono text-[10px] text-dim-gray ml-auto whitespace-nowrap">
-              {formatDate(row.timestamp)}
-            </span>
-          </button>
-        ))}
+        {filtered.map(row => {
+          const meta = getCompanyMeta(row.ticker)
+          return (
+            <button
+              key={row.job_id}
+              onClick={() => onSelect(row.job_id)}
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg glass-inner transition-all"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+              onMouseEnter={e => { (e.currentTarget).style.borderColor = 'rgba(134,143,151,0.35)' }}
+              onMouseLeave={e => { (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.07)' }}
+            >
+              {/* Logo */}
+              <div style={{
+                width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
+                color: '#479ffa', background: 'rgba(71,159,250,0.08)',
+                border: '1px solid rgba(71,159,250,0.16)',
+              }}>
+                {meta.initials}
+              </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                {/* Linha superior */}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold" style={{ color: '#479ffa' }}>
+                    {row.ticker}
+                  </span>
+                  <span className="font-mono text-[9px]" style={{ color: '#868f97' }}>
+                    {meta.name}
+                  </span>
+                  <span className={`font-mono text-[9px] font-semibold px-2 py-0.5 rounded-full border ml-1 ${REC_CHIP[row.recommendation]}`}>
+                    {REC_LABEL[row.recommendation]}
+                  </span>
+                  <span className="font-mono text-[10px] ml-auto whitespace-nowrap" style={{ color: '#868f97' }}>
+                    {formatDate(row.timestamp)}
+                  </span>
+                </div>
+                {/* Linha inferior: barra de confiança */}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="font-mono text-[8px]" style={{ color: '#999999', minWidth: 28 }}>
+                    {Math.round(row.confidence * 100)}%
+                  </span>
+                  <div style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 1, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 1,
+                      width: `${Math.round(row.confidence * 100)}%`,
+                      background: REC_BAR_COLOR[row.recommendation],
+                    }} />
+                  </div>
+                </div>
+              </div>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

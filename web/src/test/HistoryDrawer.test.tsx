@@ -66,4 +66,16 @@ describe('HistoryDrawer', () => {
       expect(screen.getByText('Erro ao carregar histórico')).toBeInTheDocument()
     })
   })
+
+  it('renderiza logo com iniciais da empresa', async () => {
+    render(<HistoryDrawer onSelect={vi.fn()} />)
+    await waitFor(() => expect(screen.getByText('PETR4')).toBeInTheDocument())
+    expect(screen.getByText('PB')).toBeInTheDocument()
+  })
+
+  it('exibe nome da empresa no item', async () => {
+    render(<HistoryDrawer onSelect={vi.fn()} />)
+    await waitFor(() => expect(screen.getByText('PETR4')).toBeInTheDocument())
+    expect(screen.getByText('Petrobras')).toBeInTheDocument()
+  })
 })
