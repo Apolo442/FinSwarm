@@ -56,6 +56,83 @@ async def _fetch_history(ticker: str, period: str = "1y", interval: str = "1d") 
     return df
 
 
+async def _fetch_financials(ticker: str) -> dict:
+    def f():
+        try:
+            t = yf.Ticker(ticker)
+            fin = t.financials
+            div = t.dividends
+            return {
+                "revenue_by_year": {str(c.year): float(fin.loc["Total Revenue", c])
+                                    for c in fin.columns if "Total Revenue" in fin.index} if not fin.empty else {},
+                "dividends_by_year": {str(d.year): float(v) for d, v in div.items()} if not div.empty else {},
+            }
+        except Exception:
+            return {}
+    return await get_or_fetch(f"yf_financials:{ticker}", timedelta(hours=12), f)
+
+
+async def get_financials(ticker_raw: str) -> dict:
+    ticker = _normalize_ticker(ticker_raw)
+    async def build():
+        fi, info, fin = await asyncio.gather(
+            _fetch_fast_info(ticker),
+            _fetch_info(ticker),
+            _fetch_financials(ticker),
+        )
+        rev = fin.get("revenue_by_year", {})
+        years = sorted(rev.keys())
+        growth = [{"year": int(y), "revenue": rev[y]} for y in years]
+
+        div_by_year: dict[str, float] = {}
+        for date_str, amount in fin.get("dividends_by_year", {}).items():
+            year = date_str[:4] if isinstance(date_str, str) else str(date_str)
+            div_by_year[year] = div_by_year.get(year, 0) + amount
+        dividends_history = [
+            {"year": int(y), "dps": round(v, 2), "dy_pct": None}
+            for y, v in sorted(div_by_year.items())
+        ]
+
+        return {
+            "facts": {
+                "mkt_cap": fi.get("market_cap"),
+                "div_yield": info.get("dividendYield"),
+                "pl_12m": info.get("trailingPE"),
+                "eps_12m": info.get("trailingEps"),
+                "beta": info.get("beta"),
+                "volatility": None,
+                "last_quarter_profit": info.get("netIncomeToCommon"),
+            },
+            "capital_structure": {
+                "mkt_cap": fi.get("market_cap"),
+                "debt": info.get("totalDebt"),
+                "cash": info.get("totalCash"),
+                "minority_interest": info.get("minorityInterest"),
+                "enterprise_value": info.get("enterpriseValue"),
+            },
+            "valuation": {
+                "pl": info.get("trailingPE"),
+                "ps": info.get("priceToSalesTrailing12Months"),
+                "pb": info.get("priceToBook"),
+                "ev_ebitda": info.get("enterpriseToEbitda"),
+                "revenue": info.get("totalRevenue"),
+                "net_income": info.get("netIncomeToCommon"),
+            },
+            "growth": growth,
+            "profitability": {
+                "roe": info.get("returnOnEquity"),
+                "roa": info.get("returnOnAssets"),
+                "net_margin": info.get("profitMargins"),
+                "ebit_margin": info.get("operatingMargins"),
+            },
+            "dividends_history": dividends_history,
+            "next_dividend": None,
+            "financial_health": [],
+            "estimates": [],
+        }
+    return await get_or_fetch(f"financials:{ticker}", timedelta(hours=1), build)
+
+
 async def get_overview(ticker_raw: str) -> dict:
     ticker = _normalize_ticker(ticker_raw)
     async def build():

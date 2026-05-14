@@ -16,6 +16,7 @@ from pydantic import field_validator
 from src.db import init_db, save_analysis, list_analyses, get_analysis
 from src.cache import init_cache_db
 from src.stock_service import get_overview as _svc_overview
+from src.stock_service import get_financials as _svc_financials
 from src.llm.client import LLMClient
 from src.models import AnalysisRequest, AnalysisResult, AnalysisRow, JobStatus, WsEvent
 from src.orchestrator import run_analysis
@@ -155,6 +156,11 @@ async def get_quote(ticker: str):
 @app.get("/stock/{ticker}/overview")
 async def stock_overview(ticker: str):
     return await _svc_overview(ticker)
+
+
+@app.get("/stock/{ticker}/financials")
+async def stock_financials(ticker: str):
+    return await _svc_financials(ticker)
 
 
 @app.get("/chart/{ticker}")
