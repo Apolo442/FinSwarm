@@ -1,13 +1,17 @@
 import { getCompanyMeta } from '../lib/companyMeta'
+import { CompanyLogo } from './CompanyLogo'
 
-const TICKERS = ['PETR4','VALE3','ITUB4','BBDC4','ABEV3','WEGE3','B3SA3','BBAS3','MGLU3','RENT3']
+const DEFAULT_TICKERS = ['PETR4','VALE3','ITUB4','BBDC4','ABEV3','WEGE3','B3SA3','BBAS3','MGLU3','RENT3']
 
 interface StockQuickPicksProps {
   onSelect: (ticker: string) => void
+  extraTickers?: string[]
   disabled?: boolean
 }
 
-export function StockQuickPicks({ onSelect, disabled = false }: StockQuickPicksProps) {
+export function StockQuickPicks({ onSelect, extraTickers = [], disabled = false }: StockQuickPicksProps) {
+  const tickers = [...DEFAULT_TICKERS, ...extraTickers]
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <span style={{ fontFamily: 'monospace', fontSize: 9, textTransform: 'uppercase',
@@ -15,12 +19,12 @@ export function StockQuickPicks({ onSelect, disabled = false }: StockQuickPicksP
         Principais da B3
       </span>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-        {TICKERS.map(ticker => {
+        {tickers.map(ticker => {
           const meta = getCompanyMeta(ticker)
           return (
             <button
               key={ticker}
-              onClick={() => onSelect(`${ticker}.SA`)}
+              onClick={() => onSelect(ticker)}
               disabled={disabled}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
@@ -43,16 +47,7 @@ export function StockQuickPicks({ onSelect, disabled = false }: StockQuickPicksP
                 ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'
               }}
             >
-              <div style={{
-                width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
-                color: '#479ffa',
-                background: 'rgba(71,159,250,0.08)',
-                border: '1px solid rgba(71,159,250,0.16)',
-              }}>
-                {meta.initials}
-              </div>
+              <CompanyLogo ticker={ticker} size={34} />
               <span style={{ fontSize: 9, fontWeight: 700, fontFamily: 'monospace', color: '#fff' }}>
                 {ticker}
               </span>

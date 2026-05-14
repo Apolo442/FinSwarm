@@ -1,70 +1,72 @@
-import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { TickerInput } from '../components/TickerInput'
 import { ErrorBanner } from '../components/ErrorBanner'
-import { HistoryDrawer } from '../components/HistoryDrawer'
-import { HistoryModal } from '../components/HistoryModal'
-import { ApiError, postAnalyze } from '../lib/api'
 import { StockQuickPicks } from '../components/StockQuickPicks'
+import { fetchAnalyses } from '../lib/api'
+
+const DEFAULT_TICKERS = ['PETR4','VALE3','ITUB4','BBDC4','ABEV3','WEGE3','B3SA3','BBAS3','MGLU3','RENT3']
 
 export function Home() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [submitting, setSubmitting]       = useState(false)
-  const [error, setError]                 = useState<string | null>(null)
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+  const [error, setError]               = useState<string | null>(null)
+  const [extraTickers, setExtraTickers] = useState<string[]>([])
 
-  async function handleSubmit(ticker: string) {
-    setSubmitting(true)
+  useEffect(() => {
+    fetchAnalyses()
+      .then(rows => {
+        const seen = new Set(DEFAULT_TICKERS)
+        const extras: string[] = []
+        for (const row of rows) {
+          const base = row.ticker.replace(/\.SA$/i, '').toUpperCase()
+          if (!seen.has(base)) {
+            seen.add(base)
+            extras.push(base)
+          }
+        }
+        setExtraTickers(extras)
+      })
+      .catch(() => {/* silencioso */})
+  }, [])
+
+  function handleSubmit(ticker: string) {
     setError(null)
-    try {
-      const job = await postAnalyze(ticker)
-      navigate(`/analysis/${job.job_id}`, { state: { ticker } })
-    } catch (e) {
-      if (e instanceof ApiError) {
-        setError(`Erro ${e.status}: ${e.message}`)
-      } else {
-        setError('Não foi possível iniciar a análise. Verifique sua conexão.')
-      }
-      setSubmitting(false)
-    }
+    const base = ticker.trim().replace(/\.SA$/i, '').toUpperCase()
+    if (!base) { setError('Digite um ticker válido.'); return }
+    navigate(`/stock/${base}`)
+  }
+
+  function handleSelect(ticker: string) {
+    const base = ticker.replace(/\.SA$/i, '').toUpperCase()
+    navigate(`/stock/${base}`)
   }
 
   return (
     <main className="min-h-screen px-6 py-12">
-      <div className="max-w-[1216px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+      <div className="max-w-2xl mx-auto flex flex-col items-start gap-8">
 
-          {/* Coluna esquerda: hero + input */}
-          <div className="flex flex-col items-start gap-8">
-            <div className="flex flex-col gap-4">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-data-blue">
-                FinSwarm · B3
-              </span>
-              <h1 className="text-[56px] font-semibold leading-[1.14] tracking-[-0.036px] text-polar-white">
-                Análise multi-agente para a B3
-              </h1>
-              <p className="text-base text-silver-dust max-w-lg">
-                Sete agentes LLM avaliam técnico, fundamentos, sentimento e risco
-                para produzir uma recomendação fundamentada.
-              </p>
-            </div>
-            <div className="w-full flex flex-col gap-4">
-              {error && <ErrorBanner message={error} />}
-              <TickerInput onSubmit={handleSubmit} disabled={submitting} />
-              <StockQuickPicks onSelect={handleSubmit} disabled={submitting} />
-            </div>
-          </div>
-
-          {/* Coluna direita: histórico */}
-          <aside className="lg:sticky lg:top-8 lg:self-start h-[calc(100vh-96px)] flex flex-col">
-            <HistoryDrawer key={location.key} onSelect={setSelectedJobId} />
-          </aside>
-
+        {/* Hero */}
+        <div className="flex flex-col gap-4">
+          <span className="font-mono text-[11px] uppercase tracking-widest" style={{ color: '#479ffa' }}>
+            FinSwarm · B3
+          </span>
+          <h1 className="text-[56px] font-semibold leading-[1.14] tracking-[-0.036px]" style={{ color: '#e6e6e6' }}>
+            Análise multi-agente para a B3
+          </h1>
+          <p className="text-base max-w-lg" style={{ color: '#cccccc' }}>
+            Sete agentes LLM avaliam técnico, fundamentos, sentimento e risco
+            para produzir uma recomendação fundamentada.
+          </p>
         </div>
-      </div>
 
-      <HistoryModal jobId={selectedJobId} onClose={() => setSelectedJobId(null)} />
+        {/* Input */}
+        <div className="w-full flex flex-col gap-4">
+          {error && <ErrorBanner message={error} />}
+          <TickerInput onSubmit={handleSubmit} />
+          <StockQuickPicks onSelect={handleSelect} extraTickers={extraTickers} />
+        </div>
+
+      </div>
     </main>
   )
 }

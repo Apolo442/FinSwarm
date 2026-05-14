@@ -52,6 +52,27 @@ export async function fetchAnalysis(jobId: string): Promise<AnalysisResult> {
   return response.json() as Promise<AnalysisResult>
 }
 
+export interface QuoteData {
+  ticker: string
+  price: number
+  prev_close: number
+  change: number
+  change_pct: number
+  volume: number | null
+  market_cap: number | null
+  currency: string
+  pl: number | null
+  pvp: number | null
+  dy: number | null
+  short_name: string | null
+}
+
+export async function fetchQuote(ticker: string): Promise<QuoteData> {
+  const r = await fetch(`/quote/${encodeURIComponent(ticker)}`)
+  if (!r.ok) throw new Error(`quote ${r.status}`)
+  return r.json()
+}
+
 export interface OhlcvBar {
   time:   number
   open:   number

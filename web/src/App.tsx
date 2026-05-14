@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { Analysis } from './pages/Analysis'
+import { StockDetail } from './pages/StockDetail'
 
 function GradientBackground() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
       <GradientBackground />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/stock/:ticker" element={<StockDetail />} />
         <Route path="/analysis/:jobId" element={<Analysis />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

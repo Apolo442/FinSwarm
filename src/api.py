@@ -118,6 +118,37 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
         _results.pop(job_id, None)
 
 
+@app.get("/quote/{ticker}")
+async def get_quote(ticker: str):
+    def _fetch():
+        t = yf.Ticker(ticker)
+        fi = t.fast_info
+        info: dict = {}
+        try:
+            info = t.info or {}
+        except Exception:
+            pass
+        prev_close = fi.previous_close or 0
+        last_price = fi.last_price or 0
+        change = last_price - prev_close
+        change_pct = (change / prev_close * 100) if prev_close else 0
+        return {
+            "ticker": ticker,
+            "price": round(last_price, 2),
+            "prev_close": round(prev_close, 2),
+            "change": round(change, 2),
+            "change_pct": round(change_pct, 2),
+            "volume": fi.last_volume,
+            "market_cap": fi.market_cap,
+            "currency": fi.currency or "BRL",
+            "pl": info.get("trailingPE"),
+            "pvp": info.get("priceToBook"),
+            "dy": info.get("dividendYield"),
+            "short_name": info.get("shortName") or info.get("longName"),
+        }
+    return await asyncio.to_thread(_fetch)
+
+
 @app.get("/chart/{ticker}")
 async def get_chart(ticker: str, period: str = "3mo", interval: str = "1d"):
     t = yf.Ticker(ticker)
