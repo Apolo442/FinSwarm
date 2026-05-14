@@ -51,3 +51,21 @@ export async function fetchAnalysis(jobId: string): Promise<AnalysisResult> {
   }
   return response.json() as Promise<AnalysisResult>
 }
+
+export interface OhlcvBar {
+  time:   number
+  open:   number
+  high:   number
+  low:    number
+  close:  number
+  volume: number
+}
+
+export async function fetchChart(
+  ticker: string,
+  period: '1mo' | '3mo' | '6mo' | '1y' = '3mo',
+): Promise<OhlcvBar[]> {
+  const r = await fetch(`/chart/${encodeURIComponent(ticker)}?period=${period}&interval=1d`)
+  if (!r.ok) throw new Error(`chart ${r.status}`)
+  return r.json()
+}
