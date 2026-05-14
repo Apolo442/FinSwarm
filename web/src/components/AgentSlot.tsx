@@ -12,15 +12,15 @@ interface AgentSlotProps {
 }
 
 const STATUS_LEFT_BAR: Record<AgentStatus, string> = {
-  pending: 'bg-light-gray/20',
-  running: 'bg-data-blue',
-  ok:      'bg-data-blue/50',
-  failed:  'bg-error',
+  pending: 'bg-[rgba(255,255,255,0.08)]',
+  running: 'bg-[#479ffa]',
+  ok:      'bg-[rgba(71,159,250,0.4)]',
+  failed:  'bg-[#e05454]',
 }
 
 const STATUS_CARD_BG: Record<AgentStatus, string> = {
   pending: 'glass',
-  running: 'glass-blue shadow-[0_0_24px_rgba(103,152,255,0.12)]',
+  running: 'glass-accent shadow-[0_0_24px_rgba(71,159,250,0.12)]',
   ok:      'glass',
   failed:  'glass shadow-[0_0_16px_rgba(224,84,84,0.08)]',
 }

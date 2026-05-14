@@ -5,6 +5,7 @@ import { ErrorBanner } from '../components/ErrorBanner'
 import { HistoryDrawer } from '../components/HistoryDrawer'
 import { HistoryModal } from '../components/HistoryModal'
 import { ApiError, postAnalyze } from '../lib/api'
+import { StockQuickPicks } from '../components/StockQuickPicks'
 
 export function Home() {
   const navigate = useNavigate()
@@ -48,9 +49,10 @@ export function Home() {
                 para produzir uma recomendação fundamentada.
               </p>
             </div>
-            <div className="w-full flex flex-col gap-3">
+            <div className="w-full flex flex-col gap-4">
               {error && <ErrorBanner message={error} />}
               <TickerInput onSubmit={handleSubmit} disabled={submitting} />
+              <StockQuickPicks onSelect={handleSubmit} disabled={submitting} />
             </div>
           </div>
 

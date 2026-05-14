@@ -28,7 +28,7 @@ export function PriceChart({ ticker, height = 180 }: PriceChartProps) {
       width:  containerRef.current.offsetWidth,
       height,
       layout: {
-        background: { type: 'solid' as const, color: 'transparent' },
+        background: { type: 'solid' as any, color: 'transparent' },
         textColor: '#868f97',
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 10,

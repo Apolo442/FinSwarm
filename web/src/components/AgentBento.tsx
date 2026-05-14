@@ -1,4 +1,4 @@
-import type { AnalysisResult, AgentOutput, Recommendation } from '../lib/types'
+import type { AnalysisResult, AgentOutput } from '../lib/types'
 
 interface Props { result: AnalysisResult }
 

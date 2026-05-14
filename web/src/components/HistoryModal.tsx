@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { AGENT_ORDER, type AgentName, type AnalysisResult } from '../lib/types'
+import type { AnalysisResult } from '../lib/types'
 import { fetchAnalysis } from '../lib/api'
 import { ReportHero } from './ReportHero'
-import { AgentSlot } from './AgentSlot'
+import { AgentBento } from './AgentBento'
 
 interface HistoryModalProps {
   jobId: string | null
@@ -63,17 +63,7 @@ export function HistoryModal({ jobId, onClose }: HistoryModalProps) {
         {result && !loading && (
           <>
             <ReportHero result={result} />
-            <div className="flex flex-col gap-2.5">
-              {AGENT_ORDER.map((name: AgentName) => (
-                <AgentSlot
-                  key={name}
-                  agent={name}
-                  status={result.agents[name].status}
-                  elapsed={null}
-                  output={result.agents[name]}
-                />
-              ))}
-            </div>
+            <AgentBento result={result} />
           </>
         )}
       </div>

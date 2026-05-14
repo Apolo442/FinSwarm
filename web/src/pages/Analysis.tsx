@@ -4,6 +4,7 @@ import { useAnalysis } from '../lib/useAnalysis'
 import { AgentTimeline } from '../components/AgentTimeline'
 import { ReportHero } from '../components/ReportHero'
 import { AgentSlot } from '../components/AgentSlot'
+import { AgentBento } from '../components/AgentBento'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Button } from '../components/ui/Button'
 import { AGENT_ORDER, type AgentName } from '../lib/types'
@@ -174,27 +175,31 @@ export function Analysis() {
             )}
 
             {result ? (
-              <ReportHero result={result} />
+              <>
+                <ReportHero result={result} />
+                <AgentBento result={result} />
+              </>
             ) : (
-              <LiveHeader
-                ticker={ticker}
-                running={!error}
-                completedCount={completedCount}
-                currentAgent={currentAgent}
-              />
-            )}
-
-            <div className="flex flex-col gap-2.5">
-              {AGENT_ORDER.map((name) => (
-                <AgentSlot
-                  key={name}
-                  agent={name}
-                  status={agents[name].status}
-                  elapsed={agents[name].elapsed}
-                  output={result ? result.agents[name] : null}
+              <>
+                <LiveHeader
+                  ticker={ticker}
+                  running={!error}
+                  completedCount={completedCount}
+                  currentAgent={currentAgent}
                 />
-              ))}
-            </div>
+                <div className="flex flex-col gap-2.5">
+                  {AGENT_ORDER.map((name) => (
+                    <AgentSlot
+                      key={name}
+                      agent={name}
+                      status={agents[name].status}
+                      elapsed={agents[name].elapsed}
+                      output={null}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </section>
         </div>
       </div>
