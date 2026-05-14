@@ -39,24 +39,15 @@ describe('HistoryModal', () => {
     vi.spyOn(api, 'fetchAnalysis').mockResolvedValue(mockResult)
     render(<HistoryModal jobId="job1" onClose={vi.fn()} />)
     await waitFor(() => {
-      expect(screen.getByText('PETR4')).toBeInTheDocument()
+      expect(screen.getAllByText('PETR4').length).toBeGreaterThan(0)
     })
   })
 
-  it('chama onClose ao pressionar ESC', () => {
+  it('fecha ao clicar no botão Voltar', () => {
     vi.spyOn(api, 'fetchAnalysis').mockImplementation(() => new Promise(() => {}))
     const onClose = vi.fn()
     render(<HistoryModal jobId="job1" onClose={onClose} />)
-    fireEvent.keyDown(document, { key: 'Escape' })
-    expect(onClose).toHaveBeenCalled()
-  })
-
-  it('fecha ao clicar no backdrop', () => {
-    vi.spyOn(api, 'fetchAnalysis').mockImplementation(() => new Promise(() => {}))
-    const onClose = vi.fn()
-    const { container } = render(<HistoryModal jobId="job1" onClose={onClose} />)
-    const overlay = container.firstChild as HTMLElement
-    fireEvent.click(overlay, { target: overlay })
+    fireEvent.click(screen.getByText('← Voltar'))
     expect(onClose).toHaveBeenCalled()
   })
 

@@ -67,10 +67,10 @@ describe('HistoryDrawer', () => {
     })
   })
 
-  it('renderiza logo com iniciais da empresa', async () => {
+  it('renderiza logo da empresa', async () => {
     render(<HistoryDrawer onSelect={vi.fn()} />)
     await waitFor(() => expect(screen.getByText('PETR4')).toBeInTheDocument())
-    expect(screen.getByText('PB')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Petrobras' })).toBeInTheDocument()
   })
 
   it('exibe nome da empresa no item', async () => {

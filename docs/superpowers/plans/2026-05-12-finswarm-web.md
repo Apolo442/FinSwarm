@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Construir o frontend MVP do FinSwarm (Vite + React + Tailwind v4) que permite submeter um ticker, acompanhar via WebSocket os 7 agentes em tempo real, e exibir o relatório final seguindo o sistema visual `DESIGN.md`.
+**Goal:** Construir o frontend MVP do FinSwarm (Vite + React + Tailwind v4) que permite submeter um ticker, acompanhar via WebSocket os 7 agentes em tempo real, e exibir o relatório final seguindo o sistema visual `style.md`.
 
 **Architecture:** SPA cliente em `~/finswarm/web/` com 2 rotas (Home `/` e Análise `/analysis/:jobId`). Comunica via REST (POST /analyze) + WebSocket (/ws/{job_id}) com o backend FastAPI existente. Vite dev server faz proxy para `localhost:8000`, sem CORS em dev; o backend ganha apenas um `CORSMiddleware` para suportar acessos diretos do browser.
 
@@ -264,12 +264,12 @@ git commit -m "feat(web): bootstrap Vite + React + TypeScript project"
 
 ---
 
-## Task 2: Tokens do DESIGN.md e Tailwind v4
+## Task 2: Tokens do style.md e Tailwind v4
 
 **Files:**
 - Modify: `web/src/index.css`
 
-- [ ] **Step 1: Substituir `web/src/index.css` com `@theme` completo do DESIGN.md**
+- [ ] **Step 1: Substituir `web/src/index.css` com `@theme` completo do style.md**
 
 ```css
 @import "tailwindcss";
@@ -366,7 +366,7 @@ Expected: server em `http://localhost:5173`. Abrir no browser deve mostrar "FinS
 ```bash
 cd ~/finswarm
 git add web/src/index.css
-git commit -m "feat(web): apply DESIGN.md tokens via Tailwind v4 @theme"
+git commit -m "feat(web): apply style.md tokens via Tailwind v4 @theme"
 ```
 
 ---
@@ -1829,7 +1829,7 @@ Localizar em `~/finswarm/docs/STATUS.md` a seção `## Estrutura de Arquivos` e 
 
 - Vite 5 + React 18 + TypeScript + Tailwind v4
 - 2 rotas: `/` (Home) e `/analysis/:jobId`
-- Componentes seguem `DESIGN.md` (Slash — Midnight Ledger)
+- Componentes seguem `style.md` (Slash — Midnight Ledger)
 - WebSocket consumido via hook `useAnalysis`
 - Testes: Vitest + RTL + mock-socket
 - Rodar em dev: `cd web && npm run dev` (proxy automático para :8000)

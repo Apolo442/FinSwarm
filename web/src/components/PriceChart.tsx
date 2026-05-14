@@ -25,7 +25,7 @@ export function PriceChart({ ticker, height = 180 }: PriceChartProps) {
   useEffect(() => {
     if (!containerRef.current) return
     const chart = createChart(containerRef.current, {
-      width:  containerRef.current.offsetWidth,
+      width:  Math.max(containerRef.current.offsetWidth, 100),
       height,
       layout: {
         background: { type: 'solid' as any, color: 'transparent' },
@@ -59,9 +59,14 @@ export function PriceChart({ ticker, height = 180 }: PriceChartProps) {
 
     const ro = new ResizeObserver(() => {
       if (containerRef.current)
-        chart.resize(containerRef.current.offsetWidth, height)
+        chart.resize(Math.max(containerRef.current.offsetWidth, 100), height)
     })
     ro.observe(containerRef.current)
+    // force resize on next frame in case container was zero-width at mount (e.g. inside modal)
+    requestAnimationFrame(() => {
+      if (containerRef.current)
+        chart.resize(Math.max(containerRef.current.offsetWidth, 100), height)
+    })
     return () => { ro.disconnect(); chart.remove() }
   }, [height])
 

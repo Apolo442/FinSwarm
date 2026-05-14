@@ -1,5 +1,18 @@
 interface CompanyMeta { name: string; initials: string }
 
+export const COMPANY_DOMAIN: Record<string, string> = {
+  PETR4: 'petrobras.com.br',
+  VALE3: 'vale.com',
+  ITUB4: 'itau.com.br',
+  BBDC4: 'bradesco.com.br',
+  ABEV3: 'ambev.com.br',
+  WEGE3: 'weg.net',
+  B3SA3: 'b3.com.br',
+  BBAS3: 'bb.com.br',
+  MGLU3: 'magazineluiza.com.br',
+  RENT3: 'localiza.com',
+}
+
 const META: Record<string, CompanyMeta> = {
   PETR4: { name: 'Petrobras',        initials: 'PB' },
   VALE3: { name: 'Vale',             initials: 'VA' },

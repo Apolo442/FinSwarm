@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { AnalysisRow, Recommendation } from '../lib/types'
 import { fetchAnalyses } from '../lib/api'
 import { getCompanyMeta } from '../lib/companyMeta'
+import { CompanyLogo } from './CompanyLogo'
 
 interface HistoryDrawerProps {
   onSelect: (jobId: string) => void
@@ -93,7 +94,7 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
             key={f.value}
             onClick={() => setFilter(f.value)}
             className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-md border transition-colors"
-            style={{
+            style={{ cursor: 'pointer',
               borderColor: filter === f.value ? 'rgba(71,159,250,0.4)' : 'rgba(255,255,255,0.1)',
               color: filter === f.value ? '#479ffa' : '#868f97',
               background: filter === f.value ? 'rgba(71,159,250,0.08)' : 'transparent',
@@ -105,7 +106,7 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-1.5 min-h-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 flex flex-col gap-1.5 min-h-0">
         {error && (
           <p className="font-mono text-[10px] text-center mt-4" style={{ color: '#e05454' }}>
             Erro ao carregar histórico
@@ -133,29 +134,21 @@ export function HistoryDrawer({ onSelect }: HistoryDrawerProps) {
               onMouseLeave={e => { (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.07)' }}
             >
               {/* Logo */}
-              <div style={{
-                width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
-                color: '#479ffa', background: 'rgba(71,159,250,0.08)',
-                border: '1px solid rgba(71,159,250,0.16)',
-              }}>
-                {meta.initials}
-              </div>
+              <CompanyLogo ticker={row.ticker} size={34} />
               {/* Info */}
               <div className="flex-1 min-w-0">
                 {/* Linha superior */}
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-[12px] font-bold" style={{ color: '#479ffa' }}>
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-mono text-[12px] font-bold shrink-0" style={{ color: '#479ffa' }}>
                     {row.ticker}
                   </span>
-                  <span className="font-mono text-[9px]" style={{ color: '#868f97' }}>
+                  <span className="font-mono text-[9px] truncate" style={{ color: '#868f97' }}>
                     {meta.name}
                   </span>
-                  <span className={`font-mono text-[9px] font-semibold px-2 py-0.5 rounded-full border ml-1 ${REC_CHIP[row.recommendation]}`}>
+                  <span className={`font-mono text-[9px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${REC_CHIP[row.recommendation]}`}>
                     {REC_LABEL[row.recommendation]}
                   </span>
-                  <span className="font-mono text-[10px] ml-auto whitespace-nowrap" style={{ color: '#868f97' }}>
+                  <span className="font-mono text-[10px] ml-auto shrink-0 whitespace-nowrap" style={{ color: '#868f97' }}>
                     {formatDate(row.timestamp)}
                   </span>
                 </div>

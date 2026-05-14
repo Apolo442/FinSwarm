@@ -3,7 +3,7 @@
 **Data:** 2026-05-12
 **Stack:** Vite + React + TypeScript + Tailwind v4
 **Localização:** `~/finswarm/web/` (subdiretório do projeto FinSwarm)
-**Visual:** segue `DESIGN.md` na raiz do repo (Slash — Midnight Ledger, Obsidian Surfaces)
+**Visual:** segue `style.md` na raiz do repo (Slash — Midnight Ledger, Obsidian Surfaces)
 
 ---
 
@@ -27,9 +27,9 @@ Mantém backend e frontend no mesmo repositório. Em dev, o Vite usa proxy para 
 
 O estado da análise vive apenas no React state da página `/analysis/:jobId` e no `_jobs` em memória do backend (que já existe). Recarregar a página perde o job. Aceitável para MVP — persistência exigiria DB no backend, que está fora do escopo da v1.
 
-### Tailwind v4 com tokens do DESIGN.md
+### Tailwind v4 com tokens do style.md
 
-`DESIGN.md` já define o bloco `@theme` para Tailwind v4. Copiar direto para `web/src/index.css`. Inter via Google Fonts; Ivy Presto substituído por Playfair Display (substituto oficial declarado no design system).
+`style.md` já define o bloco `@theme` para Tailwind v4. Copiar direto para `web/src/index.css`. Inter via Google Fonts; Ivy Presto substituído por Playfair Display (substituto oficial declarado no design system).
 
 ### Comunicação backend: REST + WebSocket existentes
 
@@ -45,7 +45,7 @@ finswarm/
 │   ├── src/
 │   │   ├── App.tsx                  # Router (Home + /analysis/:jobId)
 │   │   ├── main.tsx
-│   │   ├── index.css                # @theme tailwind + tokens DESIGN.md + Google Fonts
+│   │   ├── index.css                # @theme tailwind + tokens style.md + Google Fonts
 │   │   ├── pages/
 │   │   │   ├── Home.tsx             # Hero + TickerInput
 │   │   │   └── Analysis.tsx         # Timeline + Report
@@ -65,7 +65,7 @@ finswarm/
 │   │   │   ├── useAnalysis.ts       # Hook: WS + estado consolidado
 │   │   │   └── types.ts             # Mirror dos Pydantic models
 │   │   └── styles/
-│   │       └── tokens.css           # CSS custom properties do DESIGN.md
+│   │       └── tokens.css           # CSS custom properties do style.md
 │   ├── index.html
 │   ├── package.json
 │   ├── tailwind.config.ts
@@ -293,7 +293,7 @@ export type WsEvent =
 }
 ```
 
-Sem libs de UI (shadcn etc.) — componentes feitos à mão seguindo DESIGN.md para fidelidade visual total.
+Sem libs de UI (shadcn etc.) — componentes feitos à mão seguindo style.md para fidelidade visual total.
 
 ---
 
@@ -322,3 +322,58 @@ Sem libs de UI (shadcn etc.) — componentes feitos à mão seguindo DESIGN.md p
 - Tema claro
 - Tela de configurações
 - Animações elaboradas (apenas pulse no agente rodando)
+
+---
+
+## Emendas — Evolução pós-spec (2026-05-13)
+
+> Esta seção registra decisões tomadas após a spec original. A fonte de verdade visual atual é `style.md` (v2).
+
+### Visual Overhaul v2 — Solar Flare palette
+
+O design system original (v1 "Slash / Midnight Ledger", fundos `#030303`–`#0B0B0B`, acento `#35C78A`) foi substituído pelo v2 "Dovetail / Solar Command Center":
+
+| Antes (v1) | Depois (v2) |
+|------------|-------------|
+| Fundo `#030303`–`#0B0B0B` | Fundo `#131313` / `#1a1a1a` |
+| Acento `#35C78A` Emerald | Solar Flare `#ffa16c` (marca), Cosmic Blue `#479ffa` (interativo) |
+| Texto `rgba(255,255,255,0.94)` | Texto Smoke `#e6e6e6` (h1), Silver `#cccccc` (corpo) |
+| Negative `#D95C68` | Negative `#e05454` |
+| Warning `#E79A73` | Warn `#e9a84a` |
+| Fonte Inter pura | Inter (interface) + JetBrains Mono (dados) |
+
+### Componentes adicionados após spec
+
+| Componente | Arquivo | Descrição |
+|------------|---------|-----------|
+| `CompanyLogo` | `components/CompanyLogo.tsx` | Favicon real via Google Favicons + fallback iniciais |
+| `StockQuickPicks` | `components/StockQuickPicks.tsx` | Grid 5×2 das 10 principais ações B3 |
+| `PriceChart` | `components/PriceChart.tsx` | Gráfico TradingView lightweight-charts v4, AreaSeries |
+| `AgentBento` | `components/AgentBento.tsx` | Bento grid 3 colunas, 7 cards visuais |
+
+### Mudanças em componentes existentes
+
+**`ReportHero`** — refatorado para layout Magazine: recomendação Solar Flare grande, `PriceChart` integrado, 3 cards de métrica abaixo.
+
+**`AgentCard`** — mantido apenas para compatibilidade com testes legados. Em produção, substituído por `AgentBento`.
+
+**`HistoryModal`** — deixou de ser overlay modal para se comportar como tela cheia (`position: fixed, inset: 0, background: #131313`). Fecha exclusivamente via botão "← Voltar" (sem ESC, sem click no backdrop). Layout 2 colunas: ReportHero sticky (380px) + AgentBento (1fr).
+
+### Persistência (adicionado em 2026-05-13)
+
+Funcionalidade fora do escopo v1 foi implementada:
+- `src/db.py` — SQLite via aiosqlite
+- `data/analyses.db` — criado automaticamente no lifespan FastAPI
+- `GET /analyses` e `GET /analyses/{job_id}` — endpoints REST
+- `HistoryDrawer` — painel lateral permanente na Home
+- `HistoryModal` — visualização completa de análise histórica
+
+### Backend — endpoint de gráfico (adicionado em 2026-05-13)
+
+```python
+GET /chart/{ticker}?period=3mo&interval=1d
+# → list[{time, open, high, low, close, volume}]
+# via yfinance
+```
+
+Proxy adicionado no `vite.config.ts`: `'/chart': 'http://localhost:8000'`.

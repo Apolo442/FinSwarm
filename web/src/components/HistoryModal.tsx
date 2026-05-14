@@ -23,48 +23,77 @@ export function HistoryModal({ jobId, onClose }: HistoryModalProps) {
       .catch(() => { setError('Erro ao carregar análise.'); setLoading(false) })
   }, [jobId])
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
-
   if (!jobId) return null
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto px-6 py-10"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="w-full max-w-3xl flex flex-col gap-4">
-        <div className="flex justify-end">
-          <button
-            onClick={onClose}
-            className="font-mono text-[11px] text-dim-gray hover:text-polar-white transition-colors"
-          >
-            ✕ fechar
-          </button>
-        </div>
+    <div style={{
+      position: 'fixed', inset: 0, background: '#131313',
+      zIndex: 50, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    }}>
+      {/* Sticky header */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '14px 24px',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(19,19,19,0.95)',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <button
+          onClick={onClose}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontFamily: 'monospace', fontSize: 11, cursor: 'pointer',
+            color: '#868f97', background: 'none', border: 'none', padding: 0,
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e6e6e6' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#868f97' }}
+        >
+          ← Voltar
+        </button>
+        {result && (
+          <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#479ffa', marginLeft: 4 }}>
+            {result.ticker}
+          </span>
+        )}
+      </div>
 
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 32px' }}>
         {loading && (
-          <div className="glass rounded-lg p-8 text-center">
-            <span className="font-mono text-[11px] text-dim-gray animate-pulse">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#868f97' }}
+              className="animate-pulse">
               Carregando análise...
             </span>
           </div>
         )}
 
         {error && (
-          <div className="glass rounded-lg p-8 text-center">
-            <span className="font-mono text-[11px] text-error">{error}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#e05454' }}>{error}</span>
           </div>
         )}
 
         {result && !loading && (
-          <>
-            <ReportHero result={result} />
-            <AgentBento result={result} />
-          </>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '380px 1fr',
+            gap: 20,
+            maxWidth: 1400,
+            margin: '0 auto',
+            alignItems: 'start',
+          }}>
+            {/* Coluna esquerda: ReportHero */}
+            <div style={{ position: 'sticky', top: 0 }}>
+              <ReportHero result={result} />
+            </div>
+            {/* Coluna direita: AgentBento */}
+            <div>
+              <AgentBento result={result} />
+            </div>
+          </div>
         )}
       </div>
     </div>
