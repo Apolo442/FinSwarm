@@ -14,7 +14,7 @@ function GradientBackground() {
         pointerEvents: 'none',
       }}
     >
-      {/* Blob top-left — Data Blue */}
+      {/* Blob top-left — Solar Flare #ffa16c */}
       <div
         style={{
           position: 'absolute',
@@ -24,11 +24,11 @@ function GradientBackground() {
           height: '72vw',
           borderRadius: '62% 38% 54% 46% / 48% 57% 43% 52%',
           background:
-            'radial-gradient(ellipse at 35% 38%, rgba(103,152,255,0.22) 0%, rgba(103,152,255,0.06) 45%, transparent 70%)',
+            'radial-gradient(ellipse at 35% 38%, rgba(255,161,108,0.22) 0%, rgba(255,161,108,0.06) 45%, transparent 70%)',
           filter: 'blur(72px)',
         }}
       />
-      {/* Blob bottom-right — Violet */}
+      {/* Blob bottom-right — Slate #868f97 */}
       <div
         style={{
           position: 'absolute',
@@ -38,11 +38,11 @@ function GradientBackground() {
           height: '68vw',
           borderRadius: '44% 56% 38% 62% / 57% 38% 62% 43%',
           background:
-            'radial-gradient(ellipse at 65% 62%, rgba(124,79,255,0.20) 0%, rgba(124,79,255,0.05) 45%, transparent 70%)',
+            'radial-gradient(ellipse at 65% 62%, rgba(134,143,151,0.20) 0%, rgba(134,143,151,0.05) 45%, transparent 70%)',
           filter: 'blur(90px)',
         }}
       />
-      {/* Small accent blob center-right */}
+      {/* Small accent blob center-right — Solar Flare leve */}
       <div
         style={{
           position: 'absolute',
@@ -52,7 +52,7 @@ function GradientBackground() {
           height: '28vw',
           borderRadius: '52% 48% 61% 39% / 46% 55% 45% 54%',
           background:
-            'radial-gradient(ellipse at 50% 50%, rgba(103,152,255,0.10) 0%, transparent 65%)',
+            'radial-gradient(ellipse at 50% 50%, rgba(255,161,108,0.08) 0%, transparent 65%)',
           filter: 'blur(60px)',
         }}
       />

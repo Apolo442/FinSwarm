@@ -1,25 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-midnight-charcoal: #0a0a0a;
-  --color-pitch-black: #000000;
-  --color-off-black: #141414;
-  --color-dark-frost: #1e1e1e;
-  --color-medium-gray: #313131;
-  --color-light-gray: #454545;
-  --color-dim-gray: #7c7c7c;
-  --color-silver-dust: #a7a7a7;
-  --color-polar-white: #ffffff;
-  --color-data-blue: #6798ff;
-  --color-error: #e05454;
-  --color-risk-low: #22c55e;
-  --color-risk-mid: #eab308;
-  --color-risk-high: #ef4444;
+  --color-bg:           #131313;
+  --color-surface:      #1a1a1a;
+  --color-surface-alt:  #1f1f1f;
+  --color-border:       rgba(255,255,255,0.09);
+  --color-border-sub:   rgba(255,255,255,0.06);
+
+  --color-brand-solar:  #ffa16c;
+  --color-accent:       #479ffa;
+  --color-positive:     #4ebe96;
+  --color-warn:         #e9a84a;
+  --color-negative:     #e05454;
+
+  --color-text-primary: #ffffff;
+  --color-text-smoke:   #e6e6e6;
+  --color-text-silver:  #cccccc;
+  --color-text-ash:     #999999;
+  --color-text-slate:   #868f97;
 
   /* Typography */
   --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Type Scale */
   --text-caption: 14px;
@@ -50,60 +52,54 @@ html, body, #root {
 
 body {
   margin: 0;
-  background-color: var(--color-midnight-charcoal);
-  color: var(--color-polar-white);
+  background-color: #131313;
+  color: #ffffff;
   font-family: var(--font-inter);
-  font-size: var(--text-body);
+  font-size: 16px;
   line-height: 1.5;
-  letter-spacing: -0.012px;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Animations ─────────────────────────────────────────── */
+/* ── Glass ──────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+.glass-inner {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.glass-accent {
+  background: rgba(71,159,250,0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(71,159,250,0.18);
+}
 
+/* ── Animations ─────────────────────────── */
 @keyframes pulse-blue {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(103, 152, 255, 0.5); }
-  50%       { opacity: 0.8; box-shadow: 0 0 0 6px rgba(103, 152, 255, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(71,159,250,0.5); }
+  50%       { opacity: 0.8; box-shadow: 0 0 0 6px rgba(71,159,250,0); }
 }
-.animate-pulse-blue {
-  animation: pulse-blue 1.6s ease-in-out infinite;
-}
+.animate-pulse-blue { animation: pulse-blue 1.6s ease-in-out infinite; }
 
 @keyframes shimmer {
   0%   { transform: translateX(-100%) skewX(-12deg); }
   100% { transform: translateX(350%) skewX(-12deg); }
 }
-.animate-shimmer {
-  animation: shimmer 2.2s linear infinite;
-}
+.animate-shimmer { animation: shimmer 2.2s linear infinite; }
 
 @keyframes bar-fill {
   from { width: 0; }
 }
-.animate-bar-fill {
-  animation: bar-fill 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
+.animate-bar-fill { animation: bar-fill 0.9s cubic-bezier(0.22,1,0.36,1) both; }
 
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-up {
-  animation: fade-up 0.4s ease both;
-}
-
-/* ── Glassmorphism ──────────────────────────────────────── */
-
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.glass-blue {
-  background: rgba(103, 152, 255, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(103, 152, 255, 0.18);
-}
+.animate-fade-up { animation: fade-up 0.4s ease both; }
