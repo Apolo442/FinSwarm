@@ -4,6 +4,8 @@ import logging
 from contextlib import asynccontextmanager
 from uuid import uuid4
 
+import yfinance as yf
+
 _log = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
@@ -114,3 +116,20 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
     finally:
         _jobs.pop(job_id, None)
         _results.pop(job_id, None)
+
+
+@app.get("/chart/{ticker}")
+async def get_chart(ticker: str, period: str = "3mo", interval: str = "1d"):
+    t = yf.Ticker(ticker)
+    hist = t.history(period=period, interval=interval)
+    result = []
+    for ts, row in hist.iterrows():
+        result.append({
+            "time":   int(ts.timestamp()),
+            "open":   round(float(row["Open"]),   2),
+            "high":   round(float(row["High"]),   2),
+            "low":    round(float(row["Low"]),    2),
+            "close":  round(float(row["Close"]),  2),
+            "volume": int(row["Volume"]),
+        })
+    return result
