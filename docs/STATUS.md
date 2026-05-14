@@ -2,18 +2,28 @@
 
 ## Onde estamos
 
-Branch ativo: **`feat/web`** (31+ commits à frente de `main`).
+Branch ativo: **`feat/web`** (40+ commits à frente de `main`).
 
-- Backend FinSwarm (Python) — completo e funcional. 43 testes unitários verdes.
-- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, 31 testes verdes, `npm run build` verde.
+- Backend FinSwarm (Python) — completo e funcional. 44+ testes unitários verdes.
+- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, **49 testes verdes**, `npm run build` verde.
 - Integração e2e backend↔frontend — **funcional**. WebSocket (Chrome ↔ uvicorn) resolvido com `--ws wsproto` + bypass direto no `useAnalysis.ts`.
 - Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db` e exibidas no drawer de histórico na Home.
+- **Visual Overhaul (2026-05-13) — implementado:**
+  - Nova paleta: Solar Flare `#ffa16c`, Cosmic Blue `#479ffa`, Emerald Profit `#4ebe96`, fundo `#131313`
+  - Blobs orgânicos atualizados para #ffa16c e #868f97
+  - `StockQuickPicks` — grid 5×2 das 10 principais ações B3 na Home
+  - `HistoryDrawer` — logos (iniciais Cosmic Blue) + barra de confiança por recomendação
+  - `ReportHero` — layout Magazine: recomendação Solar Flare + `PriceChart` TradingView interativo
+  - `PriceChart` — gráfico AreaSeries TradingView (lightweight-charts v4) com range selector 1M/3M/6M/1A
+  - `AgentBento` — bento grid 3 colunas com 7 cards visuais (RSI arc, MACD bars, gauge sentimento, dial risco)
+  - `FundamentalAgent` — expõe `_metrics` (pl, pvp, roe_pct, divida_bruta_pl, margem_ebit_pct) no raw
+  - Backend: `GET /chart/{ticker}?period=3mo&interval=1d` (yfinance OHLCV)
 
 ## Stack
 
 - **Backend:** Python 3.12, FastAPI, OpenRouter via OpenAI SDK, yfinance, fundamentus, GNews, 7 agentes orquestrados com asyncio, aiosqlite.
 - **Frontend:** Vite 5, React 18, TypeScript 5, Tailwind v4 (`@tailwindcss/vite`), React Router 6, Vitest + RTL + mock-socket.
-- **Estilo visual:** `style.md` (raiz do repo) — referência de design.
+- **Estilo visual:** `DESIGN V2.md` (raiz do repo) — referência de design ativo. Nova paleta aplicada em `index.css`.
 
 ## Como rodar
 
@@ -44,7 +54,7 @@ finswarm/
 │       ├── routing.py                # ROUTING_TABLE
 │       └── cache.py
 ├── web/                              # frontend Vite
-│   ├── vite.config.ts                # proxy /analyze /analyses /health /ws
+│   ├── vite.config.ts                # proxy /analyze /analyses /health /chart /ws
 │   ├── src/
 │   │   ├── main.tsx, App.tsx
 │   │   ├── index.css                 # @theme tailwind v4 com tokens style.md
@@ -55,19 +65,23 @@ finswarm/
 │   │   │   ├── TickerInput.tsx
 │   │   │   ├── AgentTimeline.tsx
 │   │   │   ├── AgentTimelineItem.tsx
-│   │   │   ├── AgentSlot.tsx
+│   │   │   ├── AgentSlot.tsx         # apenas tela ao vivo (running state)
+│   │   │   ├── AgentBento.tsx        # bento grid 7 agentes (resultado final)
 │   │   │   ├── AgentCard.tsx         # legado, mantido p/ tests
-│   │   │   ├── ReportHero.tsx
+│   │   │   ├── PriceChart.tsx        # gráfico TradingView (lightweight-charts v4)
+│   │   │   ├── StockQuickPicks.tsx   # grid 5x2 quick picks B3
+│   │   │   ├── ReportHero.tsx        # layout Magazine com PriceChart
 │   │   │   ├── ErrorBanner.tsx
-│   │   │   ├── HistoryDrawer.tsx     # drawer lateral com busca + filtros
-│   │   │   ├── HistoryModal.tsx      # modal overlay com relatório completo
+│   │   │   ├── HistoryDrawer.tsx     # logos + barra de confiança
+│   │   │   ├── HistoryModal.tsx      # modal overlay com AgentBento
 │   │   │   └── ui/{Button,Card,Badge}.tsx
 │   │   └── lib/
 │   │       ├── types.ts              # AGENT_ORDER, AnalysisResult, AnalysisRow, WsEvent
 │   │       ├── agentLabels.ts
-│   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis
+│   │       ├── companyMeta.ts        # mapa ticker → nome + iniciais
+│   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis, fetchChart
 │   │       └── useAnalysis.ts        # hook WebSocket
-│   └── test/                         # 31 testes vitest
+│   └── test/                         # 49 testes vitest
 ├── style.md                          # referência de design (ÚNICA fonte de verdade visual)
 ├── data/                             # ignorado pelo git
 │   └── analyses.db                   # SQLite — criado automaticamente
@@ -96,13 +110,9 @@ finswarm/
 
 ## To-do (próximas sessões)
 
-### [ ] Refatorar tela de pré-análise (inserção do ativo)
+### [x] Visual Overhaul — Magazine + Bento Grid + Price Chart (2026-05-13)
 
-- `Home.tsx` + `TickerInput.tsx` precisam de revisão visual e de UX.
-
-### [ ] Refatorar tela de pós-análise (relatório visual)
-
-- `ReportHero.tsx` + `AgentSlot.tsx` no estado `ok` — layout e hierarquia visual do relatório final.
+- Nova paleta, blobs, `StockQuickPicks`, logos no histórico, `ReportHero` Magazine, `PriceChart` TradingView, `AgentBento` bento grid.
 
 ### [x] Persistência de análises (SQLite — MVP)
 
