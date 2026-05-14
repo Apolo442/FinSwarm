@@ -38,3 +38,36 @@ def test_macd_signal_line():
     line, signal, hist = macd(s)
     assert not np.isnan(line.iloc[-1])
     assert not np.isnan(signal.iloc[-1])
+
+
+from src.technicals import classic_pivots, fibonacci_pivots, camarilla_pivots, compute_signals
+
+
+def test_classic_pivots():
+    p = classic_pivots(high=10, low=8, close=9)
+    assert p["p"] == 9.0
+    assert p["s1"] == 8.0  # 2P - H
+    assert p["r1"] == 10.0  # 2P - L
+
+
+def test_fibonacci_pivots():
+    p = fibonacci_pivots(high=10, low=8, close=9)
+    assert p["p"] == 9.0
+    assert p["s1"] < p["p"] < p["r1"]
+
+
+def test_compute_signals_returns_summary():
+    np.random.seed(42)
+    n = 250
+    df = pd.DataFrame({
+        "High": np.random.uniform(20, 25, n),
+        "Low": np.random.uniform(18, 20, n),
+        "Close": np.random.uniform(19, 24, n),
+        "Open": np.random.uniform(19, 24, n),
+        "Volume": np.random.randint(1000000, 10000000, n),
+    })
+    out = compute_signals(df)
+    assert "summary" in out and "oscillators" in out and "moving_averages" in out and "pivots" in out
+    assert out["summary"]["signal"] in ("STRONG_BUY","BUY","NEUTRAL","SELL","STRONG_SELL")
+    assert len(out["oscillators"]) >= 5
+    assert len(out["moving_averages"]) >= 5
