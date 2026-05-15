@@ -239,3 +239,26 @@ async def get_news(ticker_raw: str, limit: int = 20) -> dict:
 
         return {"items": items, "next_cursor": None}
     return await get_or_fetch(f"news:{ticker}", timedelta(minutes=5), build)
+
+
+async def get_technicals(ticker_raw: str) -> dict:
+    ticker = _normalize_ticker(ticker_raw)
+    async def build():
+        hist = await _fetch_history(ticker, "1y", "1d")
+        if hist.empty or len(hist) < 20:
+            return {
+                "summary": {"signal": "NEUTRAL", "today": "NEUTRAL", "week": "NEUTRAL", "month": "NEUTRAL", "counts": {}},
+                "oscillators": [], "moving_averages": [], "pivots": [],
+            }
+        data = compute_signals(hist)
+        # Replace NaN with None for JSON serialization
+        def clean_nan(obj):
+            if isinstance(obj, dict):
+                return {k: clean_nan(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [clean_nan(item) for item in obj]
+            elif isinstance(obj, float):
+                return None if pd.isna(obj) else obj
+            return obj
+        return clean_nan(data)
+    return await get_or_fetch(f"technicals:{ticker}", timedelta(hours=1), build)
