@@ -37,7 +37,7 @@ Branch ativo: **`feat/web`** (50+ commits à frente de `main`).
 
 - **Backend:** Python 3.12, FastAPI, OpenRouter via OpenAI SDK, yfinance, fundamentus, GNews, 7 agentes orquestrados com asyncio, aiosqlite.
 - **Frontend:** Vite 5, React 18, TypeScript 5, Tailwind v4 (`@tailwindcss/vite`), React Router 6, Vitest + RTL + mock-socket.
-- **Estilo visual:** `style.md` (raiz do repo) — referência de design ativo (v2 Solar Flare palette). `index.css` aplica os tokens.
+- **Estilo visual:** `docs/design/style.md` — referência de design ativo (v2 Solar Flare palette). `index.css` aplica os tokens.
 
 ## Como rodar
 
@@ -98,12 +98,19 @@ finswarm/
 │   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis, fetchChart, fetchQuote
 │   │       └── useAnalysis.ts        # hook WebSocket
 │   └── test/                         # 54 testes vitest
-├── relatorio-tradingview-bbas3.md    # análise estrutural do TradingView BBAS3 (referência v2)
-├── style.md                          # design system v2 (ÚNICA fonte de verdade visual)
 ├── data/                             # ignorado pelo git
 │   └── analyses.db                   # SQLite — criado automaticamente
 ├── docs/
 │   ├── STATUS.md                     # você está aqui
+│   ├── design/
+│   │   └── style.md                  # design system v2 (ÚNICA fonte de verdade visual)
+│   ├── dev/
+│   │   └── run.md                    # como rodar backend + frontend
+│   ├── mockups/
+│   │   └── history-layout.html       # mockup do histórico
+│   ├── references/
+│   │   ├── EXEMPLO-B3.html           # exemplo de relatório B3
+│   │   └── relatorio-tradingview-bbas3.md  # análise estrutural do TradingView BBAS3
 │   └── superpowers/
 │       ├── specs/
 │       │   ├── 2026-05-12-finswarm-web-design.md
@@ -178,7 +185,7 @@ finswarm/
 **Ler nesta ordem:**
 
 1. **`docs/STATUS.md`** (este arquivo) — começa aqui sempre.
-2. **`style.md`** — referência visual obrigatória pra qualquer mexida em UI (design system v2).
+2. **`docs/design/style.md`** — referência visual obrigatória pra qualquer mexida em UI (design system v2).
 
 **Pesquisar no log:**
 

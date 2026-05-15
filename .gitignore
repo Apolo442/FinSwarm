@@ -1,9 +1,21 @@
+# ── Python ───────────────────────────────
 .env
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
-dist/
 .venv/
-.superpowers/
+
+# ── Dados gerados em runtime ─────────────
 data/
+
+# ── Node / Vite (raiz — instalações acidentais) ──
+node_modules/
+.vite/
+
+# ── Build ────────────────────────────────
+dist/
+*.tsbuildinfo
+
+# ── Ferramentas ───────────────────────────
+.superpowers/
