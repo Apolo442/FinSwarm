@@ -23,6 +23,11 @@ def _parse_value(text: str) -> float:
         return 0.0
 
 
+def _is_numeric(text: str) -> bool:
+    cleaned = text.strip().replace(".", "").replace(",", ".").replace("%", "").replace("-", "")
+    return bool(cleaned) and cleaned.replace(".", "").isdigit()
+
+
 def fetch_fundamentus(ticker: str) -> FundamentusData:
     ticker_clean = ticker.replace(".SA", "").upper()
     url = f"https://www.fundamentus.com.br/detalhes.php?papel={ticker_clean}"
@@ -35,23 +40,32 @@ def fetch_fundamentus(ticker: str) -> FundamentusData:
 
     for row in soup.find_all("tr"):
         cells = row.find_all("td")
-        for i in range(len(cells) - 1):
-            label_span = cells[i].find("span")
-            value_span = cells[i + 1].find("span")
-            if label_span and value_span:
-                label = label_span.get_text(strip=True)
-                value = _parse_value(value_span.get_text(strip=True))
-                data[label] = value
+        texts = [c.get_text(strip=True) for c in cells]
+        # percorre pares label/valor: labels começam com '?' no Fundamentus
+        i = 0
+        while i < len(texts) - 1:
+            label_raw = texts[i]
+            value_raw = texts[i + 1]
+            if label_raw.startswith("?"):
+                label = label_raw[1:]  # remove o '?'
+                if label and not label_raw[1:2].isdigit():
+                    data[label] = _parse_value(value_raw)
+                i += 2
+            else:
+                i += 1
 
     roe_raw = data.get("ROE", 0.0)
-    margem_raw = data.get("Marg. EBIT", 0.0)
+    # EBIT margin: bancos usam Marg. Líquida (não têm EBIT)
+    margem_raw = data.get("Marg. EBIT") or data.get("Marg. Líquida") or 0.0
+    # Dívida: bancos usam Dív Líq / Patrim quando Dív. Bruta/PL não está disponível
+    divida_raw = data.get("Dív. Bruta/PL") or data.get("Dív Líq / Patrim") or 0.0
 
     return FundamentusData(
         ticker=ticker_clean,
         pl=data.get("P/L", 0.0),
         pvp=data.get("P/VP", 0.0),
         roe=roe_raw / 100 if roe_raw > 1 else roe_raw,
-        divida_bruta_pl=data.get("Dív. Bruta/PL", 0.0),
-        margem_ebit=margem_raw / 100 if margem_raw > 1 else margem_raw,
+        divida_bruta_pl=divida_raw,
+        margem_ebit=margem_raw / 100 if abs(margem_raw) > 1 else margem_raw,
         raw=data,
     )

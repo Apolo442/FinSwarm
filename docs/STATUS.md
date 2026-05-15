@@ -6,27 +6,32 @@ Branch ativo: **`feat/web`** (50+ commits à frente de `main`).
 
 - Backend FinSwarm (Python) — completo e funcional. **68 testes unitários verdes**.
 - Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, **54 testes verdes**, `npm run build` verde.
-- **StockDetail v2 com 8 abas (2026-05-15) — implementado:**
-  - 7 abas funcionais: Visão geral, Finanças, Notícias, Comunidade FinSwarm, Sinais técnicos, Previsões, Sazonais
-  - 1 placeholder: Títulos ("em breve")
+- **StockDetail v2 — 5 abas ativas (Comunidade, Previsões e Títulos removidas):**
+  - Abas: Visão geral, Finanças, Notícias, Sinais técnicos, Sazonais
+  - `FinancialsPanel` totalmente reescrito com 6 subtabs funcionais (Visão geral, Demonstrações, Estatísticas, Dividendos, Rentabilidade, Receita) usando dados reais, sem SVG quebrado
   - Backend: 6 endpoints REST sob `/stock/:ticker`, cache 2 camadas (memória TTL + SQLite em `data/stock_cache.db`)
-  - Frontend: 14 widgets reutilizáveis (KPICard, SkeletonCard, PieChartSVG, BarChartSVG, GaugeWidget, DotsChartSVG, SeasonalsBars, SeasonalsOverlay, IdeaCard, NewsItem, AboutCard, IndicatorRow, PivotsTable), 8 panels, `useStockData` com cache de sessão por aba
-- Integração e2e backend↔frontend — **funcional**. WebSocket (Chrome ↔ uvicorn) resolvido com `--ws wsproto` + bypass direto no `useAnalysis.ts`.
-- Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db`.
-- **Visual Overhaul (2026-05-13) — implementado + refinamentos aplicados:**
-  - Nova paleta Solar Flare, `CompanyLogo`, `HistoryModal` tela cheia, `PriceChart` TradingView, `AgentBento` bento grid.
-- **Home redesign (2026-05-14) — implementado:**
-  - Layout coluna única centrado; sem `HistoryDrawer`.
-  - Cards B3 (`StockQuickPicks`) e `TickerInput` **navegam para `/stock/:ticker`** em vez de iniciar análise direto.
-  - Cards dinâmicos para tickers já analisados buscados de `GET /analyses` no mount.
-- **StockDetail v1 (2026-05-14) — implementado** em `/stock/:ticker`:
-  - Cabeçalho com `CompanyLogo` + nome + badge B3 + botão ← Voltar.
-  - Bloco de cotação (preço, variação, fechamento anterior) via `GET /quote/:ticker`.
-  - `PriceChart` embutido (1M/3M/6M/1A).
-  - 5 stat cards (Vol., Mkt Cap, P/L, P/VP, DY).
-  - CTA "Analisar com FinSwarm" que navega para `/analysis/:jobId`.
-- **Backend: `GET /quote/:ticker`** e 6 endpoints sob `/stock/:ticker` — cache 2 camadas (memória TTL + SQLite).
-  - **Atenção:** `dividendYield` do yfinance para ações BR já vem em % (ex: `8.66`), não decimal. Não multiplicar por 100.
+- **Home redesign v2 (2026-05-15):**
+  - Layout 2 colunas horizontais: hero+form (esquerda, 1.5× maior) | grid de ações (direita, 2× maior)
+  - 20 ações no grid (era 10): PETR4, VALE3, ITUB4, BBDC4, ABEV3, WEG, B3, BB, Localiza, Embraer, Suzano, JBS, Renner, Gerdau, Raia Drogasil, Equatorial, Rede D'Or, Totvs, BTG, Magalu
+  - `TickerInput` com variante `large`; `StockQuickPicks` com prop `large`
+- **StockHeader redesign:**
+  - Barra sticky de CTA removida; botões "Último relatório" + "Analisar com FinSwarm →" empilhados no header
+  - "Último relatório" em cinza/prata sólido; "Analisar" em gradiente laranja
+- **AgentBento — melhorias de relatório:**
+  - MACD redesenhado: 3 caixas numéricas reais (Linha MACD / Sinal / Histograma com 4 decimais) + barra direcional zero-centrada
+  - Ponteiro RSI e Suporte/Resistência: prata (`#d4dce8→#8e97a3`), sem corte — dot fora do `overflow:hidden`
+  - FundamentalCard: mensagem de fallback quando sem métricas e sem interpretação
+  - Bull/Bear: emojis substituídos por `TrendingUp`/`TrendingDown` do Lucide React
+  - Backend `technical.py`: agora emite `macd_line`, `macd_signal_line`, `macd_hist`, `current_price`, `rsi` no JSON de saída
+- **CompanyLogo v3:**
+  - Cascata: clearbit (fundo transparente) → FMP `image-stock/{TICKER}.SA.png` → `BarChart2` prata
+  - `LOGO_URL_OVERRIDE` em `companyMeta.ts` para casos sem FMP (ex: WEGE3 → SVG Wikimedia)
+  - Placeholder prata uniforme (`rgba(160,168,180,0.12)` + ícone `BarChart2`)
+  - `borderRadius` na `<img>` para suavizar logos com fundo branco quadrado
+- **lucide-react instalado** (`^1.16.0`) — disponível para uso em toda a UI
+- Integração e2e backend↔frontend — **funcional**. WebSocket resolvido com `--ws wsproto` + REST-first em `useAnalysis.ts`.
+- Persistência SQLite — **implementada**. Análises em `data/analyses.db`.
+- **Atenção:** `dividendYield` do yfinance para ações BR já vem em % (ex: `8.66`), não decimal. Não multiplicar por 100.
 
 ## Stack
 

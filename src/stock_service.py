@@ -64,9 +64,15 @@ async def _fetch_financials(ticker: str) -> dict:
             t = yf.Ticker(ticker)
             fin = t.financials
             div = t.dividends
+            # filtra NaN — bancos não têm "Total Revenue" em todos os anos
+            rev: dict[str, float] = {}
+            if not fin.empty and "Total Revenue" in fin.index:
+                for c in fin.columns:
+                    val = fin.loc["Total Revenue", c]
+                    if not pd.isna(val):
+                        rev[str(c.year)] = float(val)
             return {
-                "revenue_by_year": {str(c.year): float(fin.loc["Total Revenue", c])
-                                    for c in fin.columns if "Total Revenue" in fin.index} if not fin.empty else {},
+                "revenue_by_year": rev,
                 "dividends_by_year": {str(d.year): float(v) for d, v in div.items()} if not div.empty else {},
             }
         except Exception:
@@ -135,6 +141,25 @@ async def get_financials(ticker_raw: str) -> dict:
     return await get_or_fetch(f"financials:{ticker}", timedelta(hours=1), build)
 
 
+async def _translate_summary(text: str | None) -> str | None:
+    if not text:
+        return None
+    try:
+        from src.llm.client import LLMClient
+        from src.llm.routing import ROUTING_TABLE
+        llm = LLMClient()
+        model = ROUTING_TABLE.get("sentiment", {}).get("primary", "z-ai/glm-4.5-air:free")
+        result = await llm.complete(
+            messages=[{"role": "user", "content":
+                f"Traduza o texto abaixo para português brasileiro, mantendo termos técnicos financeiros. "
+                f"Retorne SOMENTE o texto traduzido, sem explicações:\n\n{text[:1200]}"}],
+            model=model,
+        )
+        return result.strip() if result else text
+    except Exception:
+        return text
+
+
 async def get_overview(ticker_raw: str) -> dict:
     ticker = _normalize_ticker(ticker_raw)
     async def build():
@@ -151,6 +176,29 @@ async def get_overview(ticker_raw: str) -> dict:
         signals = compute_signals(hist1y) if not hist1y.empty and len(hist1y) >= 20 else None
         seasonal = compute_seasonals(hist5y) if not hist5y.empty else {"monthly_avg_5y": [], "years": []}
 
+        raw_summary = info.get("longBusinessSummary")
+        summary_pt = await _translate_summary(raw_summary)
+
+        # Notícias sem classificação LLM para não estourar rate limit
+        news_preview: list[dict] = []
+        try:
+            yf_news = yf.Ticker(ticker).news or []
+            for item in yf_news[:4]:
+                content = item.get("content", {}) or item
+                title = content.get("title")
+                if title:
+                    news_preview.append({
+                        "title": title,
+                        "source": content.get("provider", {}).get("displayName", "Yahoo Finance"),
+                        "url": content.get("canonicalUrl", {}).get("url"),
+                        "published_at": content.get("pubDate"),
+                        "summary": content.get("summary"),
+                        "sentiment": "NEU",
+                        "sentiment_score": 0,
+                    })
+        except Exception:
+            pass
+
         return {
             "ticker": ticker,
             "quote": {
@@ -161,7 +209,7 @@ async def get_overview(ticker_raw: str) -> dict:
             },
             "profile": {
                 "long_name": info.get("longName") or info.get("shortName"),
-                "summary": info.get("longBusinessSummary"),
+                "summary": summary_pt,
                 "ceo": (info.get("companyOfficers", [{}])[0].get("name")
                         if info.get("companyOfficers") else None),
                 "founded": None,
@@ -187,7 +235,7 @@ async def get_overview(ticker_raw: str) -> dict:
                 "total_shares": info.get("sharesOutstanding"),
             },
             "seasonals_mini": seasonal.get("monthly_avg_5y", [])[:12],
-            "news_preview": [],
+            "news_preview": news_preview,
             "technicals_summary": signals["summary"] if signals else {
                 "signal": "NEUTRAL", "today": "NEUTRAL", "week": "NEUTRAL", "month": "NEUTRAL", "counts": {}
             },

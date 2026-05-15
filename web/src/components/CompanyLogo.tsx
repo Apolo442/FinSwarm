@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { getCompanyMeta, COMPANY_DOMAIN } from '../lib/companyMeta'
+import { useState, useEffect } from 'react'
+import { BarChart2 } from 'lucide-react'
+import { COMPANY_DOMAIN, LOGO_URL_OVERRIDE } from '../lib/companyMeta'
 
 interface CompanyLogoProps {
   ticker: string
@@ -7,35 +8,47 @@ interface CompanyLogoProps {
 }
 
 export function CompanyLogo({ ticker, size = 34 }: CompanyLogoProps) {
-  const base = ticker.replace(/\.SA$/i, '').toUpperCase()
-  const meta = getCompanyMeta(ticker)
+  const base   = ticker.replace(/\.SA$/i, '').toUpperCase()
   const domain = COMPANY_DOMAIN[base]
-  const [imgError, setImgError] = useState(false)
+
+  // srcs: override direto → clearbit (fundo transparente) → FMP fallback → placeholder
+  const override = LOGO_URL_OVERRIDE[base]
+  const srcs = [
+    ...(override ? [override] : []),
+    ...(domain && !override ? [`https://logo.clearbit.com/${domain}`] : []),
+    ...(!override ? [`https://financialmodelingprep.com/image-stock/${base}.SA.png`] : []),
+  ]
+
+  const [stage, setStage] = useState(0)
+  useEffect(() => { setStage(0) }, [base])
+
+  const src     = srcs[stage]
+  const showImg = stage < srcs.length
 
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.24, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(71,159,250,0.08)',
-      border: '1px solid rgba(71,159,250,0.16)',
+      background: 'rgba(160,168,180,0.12)',
+      border: '1px solid rgba(160,168,180,0.28)',
       overflow: 'hidden',
     }}>
-      {domain && !imgError ? (
+      {showImg ? (
         <img
-          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-          alt={meta.name}
-          width={size * 0.65}
-          height={size * 0.65}
-          onError={() => setImgError(true)}
-          style={{ objectFit: 'contain' }}
+          key={src}
+          src={src}
+          alt={base}
+          width={size * 0.8}
+          height={size * 0.8}
+          onError={() => setStage(s => s + 1)}
+          style={{ objectFit: 'contain', borderRadius: size * 0.18 }}
         />
       ) : (
-        <span style={{
-          fontSize: size * 0.26, fontWeight: 700, fontFamily: 'monospace',
-          color: '#479ffa',
-        }}>
-          {meta.initials}
-        </span>
+        <BarChart2
+          size={Math.round(size * 0.46)}
+          color="#9ca6b2"
+          strokeWidth={1.8}
+        />
       )}
     </div>
   )

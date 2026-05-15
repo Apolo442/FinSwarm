@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Button } from './ui/Button'
 
 interface TickerInputProps {
   onSubmit: (ticker: string) => void
   disabled?: boolean
+  large?: boolean
 }
 
 const TICKER_REGEX = /^[A-Z]{4}\d{1,2}(\.SA)?$/
@@ -14,7 +14,7 @@ function normalize(raw: string): string | null {
   return upper.endsWith('.SA') ? upper : `${upper}.SA`
 }
 
-export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
+export function TickerInput({ onSubmit, disabled = false, large = false }: TickerInputProps) {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -29,8 +29,16 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
     onSubmit(normalized)
   }
 
+  const inputClass = large
+    ? 'flex-1 bg-surface text-text-primary border-none ring-1 ring-text-slate/40 rounded-xl px-6 py-4 text-lg font-mono placeholder:text-text-slate focus:outline-none focus:ring-text-silver disabled:opacity-40 transition-all'
+    : 'flex-1 bg-surface text-text-primary border-none ring-1 ring-text-slate/40 rounded-lg px-4 py-2.5 text-sm font-mono placeholder:text-text-slate focus:outline-none focus:ring-text-silver disabled:opacity-40 transition-all'
+
+  const btnClass = large
+    ? 'bg-text-smoke text-bg rounded-xl px-8 py-4 text-base font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed'
+    : 'bg-text-smoke text-bg rounded-lg px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed'
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full">
       <div className="flex gap-2 w-full">
         <input
           type="text"
@@ -40,11 +48,11 @@ export function TickerInput({ onSubmit, disabled = false }: TickerInputProps) {
           disabled={disabled}
           aria-label="Ticker"
           aria-describedby={error ? 'ticker-error' : undefined}
-          className="flex-1 bg-dark-frost text-polar-white border border-light-gray/50 rounded-lg px-4 py-2.5 text-sm font-mono placeholder:text-dim-gray focus:outline-none focus:border-data-blue disabled:opacity-40 transition-colors"
+          className={inputClass}
         />
-        <Button type="submit" disabled={disabled}>
+        <button type="submit" disabled={disabled} className={btnClass}>
           Analisar
-        </Button>
+        </button>
       </div>
       {error && (
         <p id="ticker-error" role="alert" className="text-sm text-error">

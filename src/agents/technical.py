@@ -19,6 +19,11 @@ Dados técnicos de {market_data.ticker} ({market_data.name}):
 Analise e retorne APENAS este JSON (sem markdown):
 {{
   "signal": "ALTA" ou "BAIXA" ou "NEUTRO",
+  "current_price": {market_data.price:.2f},
+  "rsi": {market_data.rsi:.2f},
+  "macd_line": {market_data.macd:.4f},
+  "macd_signal_line": {market_data.macd_signal:.4f},
+  "macd_hist": {market_data.macd_hist:.4f},
   "rsi_interpretation": "string explicando o RSI",
   "macd_interpretation": "string explicando MACD",
   "bollinger_position": "ACIMA_SUPERIOR" ou "ENTRE_BANDAS" ou "ABAIXO_INFERIOR",

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSwarm — Mockup: Histórico de Análises</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: rgba(255,255,255,0.08);
+    --border-blue: rgba(103,152,255,0.35);
+    --blue: #6798ff;
+    --blue-dim: rgba(103,152,255,0.15);
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --white: #f0f2f5;
+    --silver: #9aa3b2;
+    --dim: #5a6070;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 32px 24px 80px;
+  }
+
+  h1 { font-size: 22px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .page-sub { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 40px; }
+
+  .options-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .option-card {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    background: var(--surface);
+  }
+  .option-card:hover { border-color: rgba(103,152,255,0.4); transform: translateY(-2px); }
+  .option-card.selected { border-color: var(--blue); }
+  .option-card.selected .option-label { background: var(--blue); color: #fff; }
+
+  .option-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 8px 16px;
+    background: var(--surface2);
+    color: var(--dim);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .option-label .badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    border: 1px solid var(--border-blue);
+  }
+
+  .mockup-body { padding: 20px; }
+
+  /* ── OPTION A: Seção na Home ── */
+  .home-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .hero-area {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 24px 20px;
+    border: 1px solid var(--border);
+  }
+  .hero-eyebrow { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--blue); margin-bottom: 8px; }
+  .hero-title { font-size: 28px; font-weight: 700; color: var(--white); line-height: 1.15; margin-bottom: 8px; }
+  .hero-sub { font-size: 12px; color: var(--silver); margin-bottom: 16px; }
+  .input-mock {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--dim);
+  }
+  .input-mock span { color: var(--white); font-weight: 500; }
+  .btn-mock {
+    display: inline-block;
+    background: var(--blue);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-align: center;
+  }
+  .divider { border-top: 1px solid var(--border); padding-top: 14px; }
+  .section-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 10px; }
+  .history-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .history-item:hover { border-color: var(--border-blue); }
+  .ticker-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue);
+    min-width: 56px;
+  }
+  .rec-chip {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .rec-comprar { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .rec-manter  { background: rgba(251,191,36,0.10); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+  .rec-vender  { background: rgba(248,113,113,0.10); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+  .conf-bar-wrap { flex: 1; }
+  .conf-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 99px; background: var(--blue); }
+  .time-label { font-family: var(--mono); font-size: 10px; color: var(--dim); white-space: nowrap; }
+
+  /* ── OPTION B: Página dedicada /history ── */
+  .page-mock { display: flex; flex-direction: column; gap: 12px; }
+  .page-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-topbar-title { font-size: 18px; font-weight: 600; color: var(--white); }
+  .page-topbar-sub { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .filter-row { display: flex; gap: 6px; }
+  .filter-chip {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    cursor: pointer;
+  }
+  .filter-chip.active { border-color: var(--border-blue); color: var(--blue); background: var(--blue-dim); }
+  .history-table { display: flex; flex-direction: column; gap: 4px; }
+  .table-row {
+    display: grid;
+    grid-template-columns: 70px 90px 1fr 55px 55px 50px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .table-row:hover { border-color: var(--border-blue); }
+  .table-row.header { background: transparent; border-color: transparent; cursor: default; }
+  .table-row.header > * { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); }
+  .col-ticker { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--blue); }
+  .col-date { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .col-summary { font-size: 11px; color: var(--silver); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .col-conf { font-family: var(--mono); font-size: 11px; color: var(--white); text-align: right; }
+  .col-risk { font-family: var(--mono); font-size: 11px; color: var(--yellow); text-align: right; }
+  .col-action { text-align: right; }
+  .col-action a { font-family: var(--mono); font-size: 9px; color: var(--blue); text-decoration: none; }
+
+  /* ── OPTION C: Drawer lateral ── */
+  .drawer-mock {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    min-height: 340px;
+  }
+  .drawer-main {
+    flex: 1;
+    background: var(--surface2);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .drawer-panel {
+    width: 220px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer-panel-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .drawer-panel-header .count { color: var(--blue); }
+  .drawer-list { display: flex; flex-direction: column; gap: 2px; padding: 8px; flex: 1; overflow: hidden; }
+  .drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .drawer-item:hover, .drawer-item.active { background: var(--blue-dim); }
+  .drawer-item .d-ticker { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--blue); min-width: 48px; }
+  .drawer-item .d-rec { font-size: 9px; font-family: var(--mono); }
+  .drawer-item .d-date { font-family: var(--mono); font-size: 9px; color: var(--dim); margin-left: auto; }
+  .fab {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    background: var(--blue);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+  }
+  .drawer-wrap { position: relative; }
+
+  /* selection state */
+  .selected-indicator {
+    display: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--blue);
+    margin-top: 10px;
+    text-align: center;
+  }
+  .option-card.selected .selected-indicator { display: block; }
+
+  .pros-cons { display: flex; gap: 12px; margin-top: 10px; }
+  .pros, .cons { flex: 1; }
+  .pros h4, .cons h4 { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+  .pros h4 { color: var(--green); }
+  .cons h4 { color: var(--red); }
+  .pros ul, .cons ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .pros li, .cons li { font-size: 11px; color: var(--silver); padding-left: 12px; position: relative; }
+  .pros li::before { content: '+'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+  .cons li::before { content: '–'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
+
+  .rec-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; margin-bottom: 2px; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<h1>FinSwarm — Histórico de Análises</h1>
+<p class="page-sub">Escolha o layout para acessar análises salvas · Clique para selecionar</p>
+
+<div class="options-row">
+
+  <!-- ─── OPÇÃO A ─── -->
+  <div class="option-card" onclick="select(this,'a')">
+    <div class="option-label">
+      Opção A — Seção na Home
+      <span class="badge">Menos navegação</span>
+    </div>
+    <div class="mockup-body">
+      <div class="home-mock">
+        <!-- hero -->
+        <div class="hero-area">
+          <div class="hero-eyebrow">FinSwarm · B3</div>
+          <div class="hero-title">Análise multi-agente para a B3</div>
+          <div class="hero-sub">Sete agentes LLM avaliam técnico, fundamentos, sentimento e risco.</div>
+          <div class="input-mock"><span>PETR4</span>.SA &nbsp;›</div>
+        </div>
+        <!-- histórico inline -->
+        <div class="divider">
+          <div class="section-label">Análises recentes</div>
+          <div class="history-row">
+            <div class="history-item">
+              <div class="ticker-badge">PETR4</div>
+              <div class="rec-chip rec-comprar">Comprar</div>
+              <div class="conf-bar-wrap">
+                <div class="conf-bar"><div class="conf-fill" style="width:82%"></div></div>
+              </div>
+              <div class="time-label">hoje 14:32</div>
+            </div>
+            <div class="history-item">
+              <div class="ticker-badge">VALE3</div>
+              <div class="rec-chip rec-manter">Manter</div>
+              <div class="conf-bar-wrap">
+                <div class="conf-bar"><div class="conf-fill" style="width:61%"></div></div>
+              </div>
+              <div class="time-label">ontem</div>
+            </div>
+            <div class="history-item">
+              <div class="ticker-badge">ITUB4</div>
+              <div class="rec-chip rec-vender">Vender</div>
+              <div class="conf-bar-wrap">
+                <div class="conf-bar"><div class="conf-fill" style="width:74%"></div></div>
+              </div>
+              <div class="time-label">13/05</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>A favor</h4><ul><li>Zero cliques extras</li><li>Contexto imediato</li><li>Simples de implementar</li></ul></div>
+        <div class="cons"><h4>Contra</h4><ul><li>Home fica mais longa</li><li>Esconde com histórico grande</li></ul></div>
+      </div>
+    </div>
+    <div class="selected-indicator">✓ Selecionado</div>
+  </div>
+
+  <!-- ─── OPÇÃO B ─── -->
+  <div class="option-card" onclick="select(this,'b')">
+    <div class="option-label">
+      Opção B — Página dedicada /history
+      <span class="badge">Mais espaço</span>
+    </div>
+    <div class="mockup-body">
+      <div class="page-mock">
+        <div class="page-topbar">
+          <div>
+            <div class="page-topbar-title">Histórico</div>
+            <div class="page-topbar-sub">12 análises · ordenadas por data</div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-chip active">Todas</div>
+            <div class="filter-chip">Comprar</div>
+            <div class="filter-chip">Manter</div>
+            <div class="filter-chip">Vender</div>
+          </div>
+        </div>
+        <div class="history-table">
+          <div class="table-row header">
+            <div>Ativo</div><div>Data</div><div>Síntese</div><div>Conf.</div><div>Risco</div><div></div>
+          </div>
+          <div class="table-row">
+            <div class="col-ticker">PETR4</div>
+            <div class="col-date">hoje 14:32</div>
+            <div class="col-summary rec-comprar" style="background:none;border:none;padding:0;border-radius:0;font-size:11px">Fundamentos sólidos, momento técnico positivo</div>
+            <div class="col-conf">82%</div>
+            <div class="col-risk" style="color:var(--green)">31</div>
+            <div class="col-action"><a href="#">Ver →</a></div>
+          </div>
+          <div class="table-row">
+            <div class="col-ticker">VALE3</div>
+            <div class="col-date">ontem</div>
+            <div class="col-summary" style="color:var(--silver);font-size:11px">Exposição a commodities, aguardar reversão</div>
+            <div class="col-conf">61%</div>
+            <div class="col-risk">55</div>
+            <div class="col-action"><a href="#">Ver →</a></div>
+          </div>
+          <div class="table-row">
+            <div class="col-ticker">ITUB4</div>
+            <div class="col-date">13/05</div>
+            <div class="col-summary" style="color:var(--silver);font-size:11px">Pressão setorial, stop-loss recomendado</div>
+            <div class="col-conf">74%</div>
+            <div class="col-risk" style="color:var(--red)">77</div>
+            <div class="col-action"><a href="#">Ver →</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>A favor</h4><ul><li>Escala bem (n análises)</li><li>Filtros e ordenação</li><li>Home limpa</li></ul></div>
+        <div class="cons"><h4>Contra</h4><ul><li>1 clique extra p/ chegar</li><li>Mais componentes</li></ul></div>
+      </div>
+    </div>
+    <div class="selected-indicator">✓ Selecionado</div>
+  </div>
+
+  <!-- ─── OPÇÃO C ─── -->
+  <div class="option-card" onclick="select(this,'c')">
+    <div class="option-label">
+      Opção C — Drawer lateral na Home
+      <span class="badge">Híbrido</span>
+    </div>
+    <div class="mockup-body">
+      <div class="drawer-wrap">
+        <div class="drawer-mock">
+          <div class="drawer-main">
+            <div class="hero-eyebrow">FinSwarm · B3</div>
+            <div class="hero-title" style="font-size:22px">Análise multi-agente para a B3</div>
+            <div class="input-mock"><span>PETR4</span>.SA &nbsp;›</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:auto;padding-top:12px;">
+              ← Clique em "Histórico" para abrir o painel
+            </div>
+          </div>
+          <div class="drawer-panel">
+            <div class="drawer-panel-header">
+              Histórico <span class="count">12</span>
+            </div>
+            <div class="drawer-list">
+              <div class="drawer-item active">
+                <div class="d-ticker">PETR4</div>
+                <div class="rec-chip rec-comprar d-rec">Comprar</div>
+                <div class="d-date">hoje</div>
+              </div>
+              <div class="drawer-item">
+                <div class="d-ticker">VALE3</div>
+                <div class="rec-chip rec-manter d-rec">Manter</div>
+                <div class="d-date">ontem</div>
+              </div>
+              <div class="drawer-item">
+                <div class="d-ticker">ITUB4</div>
+                <div class="rec-chip rec-vender d-rec">Vender</div>
+                <div class="d-date">13/05</div>
+              </div>
+              <div class="drawer-item">
+                <div class="d-ticker">BBAS3</div>
+                <div class="rec-chip rec-comprar d-rec">Comprar</div>
+                <div class="d-date">12/05</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>A favor</h4><ul><li>Home compacta</li><li>Histórico sempre acessível</li><li>Sem mudança de rota</li></ul></div>
+        <div class="cons"><h4>Contra</h4><ul><li>Mais complexo</li><li>Aperta o layout</li></ul></div>
+      </div>
+    </div>
+    <div class="selected-indicator">✓ Selecionado</div>
+  </div>
+
+</div>
+
+<script>
+  let selected = null;
+  function select(el, choice) {
+    document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selected = choice;
+    console.log('Selecionado:', choice);
+  }
+</script>
+</body>
+</html>

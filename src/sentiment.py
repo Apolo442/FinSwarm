@@ -32,10 +32,9 @@ async def classify_titles(titles: list[str]) -> list[str]:
         client = LLMClient()
         model = ROUTING_TABLE.get("sentiment", {}).get("primary", "z-ai/glm-4.5-air:free")
         messages = [{"role": "user", "content": prompt}]
-        raw = await client.complete(messages=messages, model=model)
         try:
+            raw = await client.complete(messages=messages, model=model)
             text = raw.strip()
-            # Strip markdown code fences if present
             if "```" in text:
                 text = text.split("```")[1].strip().lstrip("json").strip()
             labels = json.loads(text)

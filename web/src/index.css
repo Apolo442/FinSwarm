@@ -60,6 +60,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Scrollbar oculta ───────────────────── */
+.tabbar-scroll { scrollbar-width: none; }
+.tabbar-scroll::-webkit-scrollbar { display: none; }
+
 /* ── Glass ──────────────────────────────── */
 .glass {
   background: rgba(255,255,255,0.03);

@@ -41,7 +41,7 @@ export function OverviewPanel({ data, loading, ticker }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="glass" style={{ padding: '18px 22px' }}>
+      <div className="glass" style={{ padding: 0, overflow: 'hidden' }}>
         <PriceChart ticker={`${ticker}.SA`} height={320} />
       </div>
 

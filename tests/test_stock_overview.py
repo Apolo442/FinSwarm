@@ -23,15 +23,25 @@ def make_fake_ticker():
         "sector": "Energy", "industry": "Oil & Gas",
         "beta": 1.2, "trailingEps": 7.18,
     }
-    n = 260
-    idx = pd.date_range("2025-05-01", periods=n, freq="D")
-    t.history = MagicMock(return_value=pd.DataFrame({
-        "Open":   [40+i*0.02 for i in range(n)],
-        "High":   [42+i*0.02 for i in range(n)],
-        "Low":    [39+i*0.02 for i in range(n)],
-        "Close":  [41+i*0.02 for i in range(n)],
-        "Volume":[1e6]*n,
-    }, index=idx))
+
+    # Mock history to return appropriate data based on period/interval
+    def mock_history(period="1y", interval="1d"):
+        if interval == "1mo":  # Monthly data for 5 years
+            idx = pd.date_range("2020-06-30", "2025-12-31", freq="ME")
+        else:  # Daily data for 1 year
+            n = 260
+            idx = pd.date_range("2025-05-01", periods=n, freq="D")
+
+        n = len(idx)
+        return pd.DataFrame({
+            "Open":   [40+i*0.02 for i in range(n)],
+            "High":   [42+i*0.02 for i in range(n)],
+            "Low":    [39+i*0.02 for i in range(n)],
+            "Close":  [41+i*0.02 for i in range(n)],
+            "Volume":[1e6]*n,
+        }, index=idx)
+
+    t.history = MagicMock(side_effect=mock_history)
     t.major_holders = pd.DataFrame({"Value": ["50.39%", "49.61%"]},
                                     index=["% of Shares Held by Insiders", "% of Shares Held by Institutions"])
     t.news = []

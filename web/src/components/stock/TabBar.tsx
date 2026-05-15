@@ -1,26 +1,22 @@
-export type TabName = 'overview' | 'financials' | 'news' | 'community' | 'technicals' | 'forecast' | 'seasonals' | 'bonds'
+export type TabName = 'overview' | 'financials' | 'news' | 'technicals' | 'seasonals'
 
 interface Props {
   active: TabName
   onChange: (t: TabName) => void
   newsCount?: number
-  communityCount?: number
 }
 
 const TABS: { id: TabName; label: string }[] = [
   { id: 'overview',   label: 'Visão geral'    },
   { id: 'financials', label: 'Finanças'       },
   { id: 'news',       label: 'Notícias'       },
-  { id: 'community',  label: 'Comunidade'     },
   { id: 'technicals', label: 'Sinais técnicos'},
-  { id: 'forecast',   label: 'Previsões'      },
   { id: 'seasonals',  label: 'Sazonais'       },
-  { id: 'bonds',      label: 'Títulos'        },
 ]
 
-export function TabBar({ active, onChange, newsCount, communityCount }: Props) {
+export function TabBar({ active, onChange, newsCount }: Props) {
   return (
-    <div role="tablist" style={{
+    <div role="tablist" className="tabbar-scroll" style={{
       display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(255,255,255,0.07)',
       padding: '0 32px', background: 'rgba(255,255,255,0.02)',
       backdropFilter: 'blur(20px)', borderRadius: '16px 16px 0 0',
@@ -28,7 +24,7 @@ export function TabBar({ active, onChange, newsCount, communityCount }: Props) {
     }}>
       {TABS.map(t => {
         const isActive = active === t.id
-        const count = t.id === 'news' ? newsCount : t.id === 'community' ? communityCount : undefined
+        const count = t.id === 'news' ? newsCount : undefined
         return (
           <button key={t.id} role="tab" aria-selected={isActive}
             onClick={() => onChange(t.id)}
