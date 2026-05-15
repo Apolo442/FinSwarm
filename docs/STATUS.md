@@ -1,11 +1,16 @@
-# FinSwarm — Status do Projeto (2026-05-14)
+# FinSwarm — Status do Projeto (2026-05-15)
 
 ## Onde estamos
 
-Branch ativo: **`feat/web`** (40+ commits à frente de `main`).
+Branch ativo: **`feat/web`** (50+ commits à frente de `main`).
 
-- Backend FinSwarm (Python) — completo e funcional. **46 testes unitários verdes** (133s).
-- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, **49 testes verdes**, `npm run build` verde.
+- Backend FinSwarm (Python) — completo e funcional. **68 testes unitários verdes**.
+- Frontend FinSwarm Web (Vite + React + TS + Tailwind v4) — completo, **54 testes verdes**, `npm run build` verde.
+- **StockDetail v2 com 8 abas (2026-05-15) — implementado:**
+  - 7 abas funcionais: Visão geral, Finanças, Notícias, Comunidade FinSwarm, Sinais técnicos, Previsões, Sazonais
+  - 1 placeholder: Títulos ("em breve")
+  - Backend: 6 endpoints REST sob `/stock/:ticker`, cache 2 camadas (memória TTL + SQLite em `data/stock_cache.db`)
+  - Frontend: 14 widgets reutilizáveis (KPICard, SkeletonCard, PieChartSVG, BarChartSVG, GaugeWidget, DotsChartSVG, SeasonalsBars, SeasonalsOverlay, IdeaCard, NewsItem, AboutCard, IndicatorRow, PivotsTable), 8 panels, `useStockData` com cache de sessão por aba
 - Integração e2e backend↔frontend — **funcional**. WebSocket (Chrome ↔ uvicorn) resolvido com `--ws wsproto` + bypass direto no `useAnalysis.ts`.
 - Persistência SQLite — **implementada**. Análises concluídas são salvas em `data/analyses.db`.
 - **Visual Overhaul (2026-05-13) — implementado + refinamentos aplicados:**
@@ -149,9 +154,9 @@ finswarm/
 - `StockDetail` v1 em `/stock/:ticker`: cotação ao vivo, PriceChart, 5 stats, CTA analisar.
 - Backend: `GET /quote/:ticker` via yfinance `fast_info`.
 
-### [ ] StockDetail v2 — 8 tabs estilo TradingView
+### [x] StockDetail v2 — 8 tabs estilo TradingView (2026-05-15)
 
-**Plano:** `docs/superpowers/plans/2026-05-14-stock-detail-tabs.md` (40 tarefas, Fases A–G)
+**Plano:** `docs/superpowers/plans/2026-05-14-stock-detail-tabs.md` (40 tarefas, Fases A–G — todas concluídas)
 
 - Fase A: cache SQLite para cotações + dados de ações
 - Fase B: 6 endpoints backend (technicals, financials, news, community, seasonals, forecast)
