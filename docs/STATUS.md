@@ -25,13 +25,8 @@ Branch ativo: **`feat/web`** (50+ commits à frente de `main`).
   - `PriceChart` embutido (1M/3M/6M/1A).
   - 5 stat cards (Vol., Mkt Cap, P/L, P/VP, DY).
   - CTA "Analisar com FinSwarm" que navega para `/analysis/:jobId`.
-- **Backend: `GET /quote/:ticker`** — yfinance `fast_info` + `.info` (P/L, P/VP, DY, short_name).
+- **Backend: `GET /quote/:ticker`** e 6 endpoints sob `/stock/:ticker` — cache 2 camadas (memória TTL + SQLite).
   - **Atenção:** `dividendYield` do yfinance para ações BR já vem em % (ex: `8.66`), não decimal. Não multiplicar por 100.
-- **StockDetail v2 — spec + plano prontos para execução (Fases A–G, 40 tarefas):**
-  - 8 tabs: Visão geral, Finanças, Notícias, Comunidade FinSwarm, Sinais técnicos, Previsões, Sazonais, Títulos.
-  - Spec: `docs/superpowers/specs/2026-05-14-stock-detail-tabs-design.md`
-  - Plano: `docs/superpowers/plans/2026-05-14-stock-detail-tabs.md`
-  - Referência estrutural: `relatorio-tradingview-bbas3.md` (análise detalhada da página BBAS3 no TradingView)
 
 ## Stack
 
@@ -74,7 +69,7 @@ finswarm/
 │   │   ├── index.css                 # @theme tailwind v4 + .glass/.glass-inner/.glass-accent + animações
 │   │   ├── pages/
 │   │   │   ├── Home.tsx              # coluna única; StockQuickPicks+TickerInput → /stock/:ticker
-│   │   │   ├── StockDetail.tsx       # v1: cotação + PriceChart + stats + CTA analisar
+│   │   │   ├── StockDetail.tsx       # v2: orquestrador 8 abas + CTA sticky
 │   │   │   └── Analysis.tsx          # split timeline + AgentSlots (ao vivo) | ReportHero+AgentBento (resultado)
 │   │   ├── components/
 │   │   │   ├── TickerInput.tsx
@@ -97,7 +92,7 @@ finswarm/
 │   │       ├── companyMeta.ts        # mapa ticker → nome + iniciais + COMPANY_DOMAIN
 │   │       ├── api.ts                # postAnalyze, fetchAnalyses, fetchAnalysis, fetchChart, fetchQuote
 │   │       └── useAnalysis.ts        # hook WebSocket
-│   └── test/                         # 49 testes vitest
+│   └── test/                         # 54 testes vitest
 ├── relatorio-tradingview-bbas3.md    # análise estrutural do TradingView BBAS3 (referência v2)
 ├── style.md                          # design system v2 (ÚNICA fonte de verdade visual)
 ├── data/                             # ignorado pelo git
@@ -179,8 +174,6 @@ finswarm/
 
 1. **`docs/STATUS.md`** (este arquivo) — começa aqui sempre.
 2. **`style.md`** — referência visual obrigatória pra qualquer mexida em UI (design system v2).
-3. **`docs/superpowers/specs/2026-05-14-stock-detail-tabs-design.md`** — spec das 8 tabs (próximo milestone).
-4. **`docs/superpowers/plans/2026-05-14-stock-detail-tabs.md`** — plano 40 tarefas Fases A–G (executar este).
 
 **Pesquisar no log:**
 
