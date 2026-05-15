@@ -48,13 +48,16 @@ async def save_analysis(result: AnalysisResult, db_path: Path = DB_PATH) -> None
         await db.commit()
 
 
-async def list_analyses(db_path: Path = DB_PATH) -> list[AnalysisRow]:
+async def list_analyses(ticker: str | None = None, db_path: Path = DB_PATH) -> list[AnalysisRow]:
+    sql = "SELECT job_id, ticker, timestamp, recommendation, confidence, risk_score FROM analyses"
+    params: tuple = ()
+    if ticker:
+        sql += " WHERE UPPER(ticker) LIKE ?"
+        params = (f"%{ticker.upper()}%",)
+    sql += " ORDER BY timestamp DESC"
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT job_id, ticker, timestamp, recommendation, confidence, risk_score "
-            "FROM analyses ORDER BY timestamp DESC"
-        ) as cursor:
+        async with db.execute(sql, params) as cursor:
             rows = await cursor.fetchall()
     return [AnalysisRow.model_validate(dict(row)) for row in rows]
 
