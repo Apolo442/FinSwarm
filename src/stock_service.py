@@ -195,3 +195,47 @@ async def get_overview(ticker_raw: str) -> dict:
             },
         }
     return await get_or_fetch(f"overview:{ticker}", timedelta(minutes=10), build)
+
+
+async def get_news(ticker_raw: str, limit: int = 20) -> dict:
+    ticker = _normalize_ticker(ticker_raw)
+    async def build():
+        info = await _fetch_info(ticker)
+        company = info.get("shortName") or info.get("longName") or ticker
+        news_data = await fetch_news(ticker, company)
+        gnews_titles = news_data.headlines[:limit]
+
+        yf_news = []
+        try:
+            for item in (yf.Ticker(ticker).news or [])[:limit]:
+                content = item.get("content", {}) or item
+                title = content.get("title")
+                if title:
+                    yf_news.append({
+                        "title": title,
+                        "source": content.get("provider", {}).get("displayName", "yfinance"),
+                        "url": content.get("canonicalUrl", {}).get("url"),
+                        "published_at": content.get("pubDate"),
+                        "summary": content.get("summary"),
+                    })
+        except Exception:
+            pass
+
+        seen, items = set(), []
+        for t in gnews_titles:
+            if t in seen: continue
+            seen.add(t)
+            items.append({"title": t, "source": "GNews", "url": None,
+                          "published_at": None, "summary": None})
+        for it in yf_news:
+            if it["title"] in seen: continue
+            seen.add(it["title"]); items.append(it)
+        items = items[:limit]
+
+        labels = await classify_titles([it["title"] for it in items])
+        for it, lab in zip(items, labels):
+            it["sentiment"] = lab
+            it["sentiment_score"] = {"POS": 60, "NEG": -60, "NEU": 0}[lab]
+
+        return {"items": items, "next_cursor": None}
+    return await get_or_fetch(f"news:{ticker}", timedelta(minutes=5), build)

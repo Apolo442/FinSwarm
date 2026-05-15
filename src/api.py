@@ -17,6 +17,7 @@ from src.db import init_db, save_analysis, list_analyses, get_analysis
 from src.cache import init_cache_db
 from src.stock_service import get_overview as _svc_overview
 from src.stock_service import get_financials as _svc_financials
+from src.stock_service import get_news as _svc_news
 from src.llm.client import LLMClient
 from src.models import AnalysisRequest, AnalysisResult, AnalysisRow, JobStatus, WsEvent
 from src.orchestrator import run_analysis
@@ -161,6 +162,11 @@ async def stock_overview(ticker: str):
 @app.get("/stock/{ticker}/financials")
 async def stock_financials(ticker: str):
     return await _svc_financials(ticker)
+
+
+@app.get("/stock/{ticker}/news")
+async def stock_news(ticker: str, limit: int = 20):
+    return await _svc_news(ticker, limit=limit)
 
 
 @app.get("/chart/{ticker}")
