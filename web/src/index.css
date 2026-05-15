@@ -62,10 +62,18 @@ body {
 
 /* ── Glass ──────────────────────────────── */
 .glass {
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-radius: 16px;
+}
+.glass-strong {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-radius: 16px;
 }
 .glass-inner {
   background: rgba(255,255,255,0.03);
@@ -74,10 +82,10 @@ body {
   border: 1px solid rgba(255,255,255,0.07);
 }
 .glass-accent {
-  background: rgba(71,159,250,0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(71,159,250,0.18);
+  background: linear-gradient(135deg, rgba(255,161,108,0.06), rgba(255,161,108,0.02));
+  border: 1px solid rgba(255,161,108,0.15);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
 }
 
 /* ── Animations ─────────────────────────── */
@@ -103,3 +111,16 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-up { animation: fade-up 0.4s ease both; }
+
+@keyframes shimmer-bg {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,161,108,0.06) 50%,
+    rgba(255,255,255,0.03) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer-bg 2s linear infinite;
+}

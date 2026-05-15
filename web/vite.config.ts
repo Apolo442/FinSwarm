@@ -13,6 +13,7 @@ export default defineConfig({
       '/health': 'http://localhost:8000',
       '/chart':  'http://localhost:8000',
       '/quote':  'http://localhost:8000',
+      '/stock':  'http://localhost:8000',
       '/ws': {
         target: 'http://localhost:8000',
         ws: true,
