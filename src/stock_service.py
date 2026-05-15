@@ -262,3 +262,54 @@ async def get_technicals(ticker_raw: str) -> dict:
             return obj
         return clean_nan(data)
     return await get_or_fetch(f"technicals:{ticker}", timedelta(hours=1), build)
+
+
+async def _fetch_forecast_raw(ticker: str) -> dict:
+    def f():
+        try:
+            t = yf.Ticker(ticker)
+            tgt = t.analyst_price_targets or {}
+            try:
+                rec = t.recommendations
+            except Exception:
+                rec = None
+            rec_dict = {"strong_buy": 0, "buy": 0, "hold": 0, "sell": 0, "strong_sell": 0}
+            if rec is not None and not rec.empty:
+                latest = rec.iloc[0]
+                rec_dict = {
+                    "strong_buy": int(latest.get("strongBuy", 0)),
+                    "buy": int(latest.get("buy", 0)),
+                    "hold": int(latest.get("hold", 0)),
+                    "sell": int(latest.get("sell", 0)),
+                    "strong_sell": int(latest.get("strongSell", 0)),
+                }
+            return {"target": tgt, "recommendations": rec_dict}
+        except Exception:
+            return {"target": {}, "recommendations": {}}
+    return await get_or_fetch(f"yf_forecast:{ticker}", timedelta(hours=12), f)
+
+
+async def get_forecast(ticker_raw: str) -> dict:
+    ticker = _normalize_ticker(ticker_raw)
+    async def build():
+        fi, fc = await asyncio.gather(
+            _fetch_fast_info(ticker),
+            _fetch_forecast_raw(ticker),
+        )
+        tgt = fc.get("target", {})
+        return {
+            "price_target": {
+                "current": fi.get("last_price") or tgt.get("current"),
+                "target_mean": tgt.get("mean"),
+                "target_high": tgt.get("high"),
+                "target_low": tgt.get("low"),
+                "target_median": tgt.get("median"),
+                "recommendations": fc.get("recommendations", {}),
+            },
+            "recommendations": fc.get("recommendations", {}),
+            "eps_history": [],
+            "revenue_history": [],
+            "next_eps_estimate": None,
+            "next_revenue_estimate": None,
+        }
+    return await get_or_fetch(f"forecast:{ticker}", timedelta(hours=1), build)
