@@ -48,7 +48,7 @@ async def save_analysis(result: AnalysisResult, db_path: Path = DB_PATH) -> None
         await db.commit()
 
 
-async def list_analyses(ticker: str | None = None, db_path: Path = DB_PATH) -> list[AnalysisRow]:
+async def list_analyses(db_path: Path = DB_PATH, *, ticker: str | None = None) -> list[AnalysisRow]:
     sql = "SELECT job_id, ticker, timestamp, recommendation, confidence, risk_score FROM analyses"
     params: tuple = ()
     if ticker:
