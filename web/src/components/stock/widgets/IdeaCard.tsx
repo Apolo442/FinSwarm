@@ -10,7 +10,7 @@ const REC_STYLE: Record<string, { bg: string; border: string; fg: string; label:
 
 export function IdeaCard({ analysis, onClick }: Props) {
   const rec = REC_STYLE[analysis.recommendation] || REC_STYLE.HOLD
-  const date = new Date(analysis.created_at).toLocaleString('pt-BR', {
+  const date = new Date(analysis.timestamp).toLocaleString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
   return (
