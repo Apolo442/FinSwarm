@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { fetchOverview, fetchFinancials, fetchStockNews, fetchTechnicals, fetchForecastData, fetchSeasonals } from '../lib/stockApi'
+import { fetchOverview, fetchStockNews } from '../lib/stockApi'
 
 describe('stockApi', () => {
   it('fetchOverview chama /stock/X/overview', async () => {
