@@ -53,6 +53,8 @@ async def _fetch_history(ticker: str, period: str = "1y", interval: str = "1d") 
     df = pd.DataFrame(rows)
     if "Date" in df.columns:
         df.index = pd.to_datetime(df["Date"]); df = df.drop(columns=["Date"])
+    elif "index" in df.columns:
+        df.index = pd.to_datetime(df["index"]); df = df.drop(columns=["index"])
     return df
 
 
@@ -313,3 +315,13 @@ async def get_forecast(ticker_raw: str) -> dict:
             "next_revenue_estimate": None,
         }
     return await get_or_fetch(f"forecast:{ticker}", timedelta(hours=1), build)
+
+
+async def get_seasonals(ticker_raw: str) -> dict:
+    ticker = _normalize_ticker(ticker_raw)
+    async def build():
+        hist = await _fetch_history(ticker, "5y", "1mo")
+        if hist.empty:
+            return {"monthly_avg_5y": [], "years": []}
+        return compute_seasonals(hist)
+    return await get_or_fetch(f"seasonals:{ticker}", timedelta(hours=24), build)

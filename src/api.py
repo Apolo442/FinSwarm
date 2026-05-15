@@ -20,6 +20,7 @@ from src.stock_service import get_financials as _svc_financials
 from src.stock_service import get_news as _svc_news
 from src.stock_service import get_technicals as _svc_technicals
 from src.stock_service import get_forecast as _svc_forecast
+from src.stock_service import get_seasonals as _svc_seasonals
 from src.llm.client import LLMClient
 from src.models import AnalysisRequest, AnalysisResult, AnalysisRow, JobStatus, WsEvent
 from src.orchestrator import run_analysis
@@ -62,8 +63,8 @@ async def health():
 
 
 @app.get("/analyses", response_model=list[AnalysisRow])
-async def get_analyses():
-    return await list_analyses()
+async def get_analyses(ticker: str | None = None):
+    return await list_analyses(ticker=ticker)
 
 
 @app.get("/analyses/{job_id}", response_model=AnalysisResult)
@@ -179,6 +180,11 @@ async def stock_technicals(ticker: str):
 @app.get("/stock/{ticker}/forecast")
 async def stock_forecast(ticker: str):
     return await _svc_forecast(ticker)
+
+
+@app.get("/stock/{ticker}/seasonals")
+async def stock_seasonals(ticker: str):
+    return await _svc_seasonals(ticker)
 
 
 @app.get("/chart/{ticker}")
