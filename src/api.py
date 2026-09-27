@@ -111,19 +111,25 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
         await websocket.send_json({"event": "error", "message": "job_id não encontrado"})
         await websocket.close()
         return
+    should_cleanup = False
     try:
         while True:
-            event: WsEvent = await asyncio.wait_for(queue.get(), timeout=120)
+            try:
+                event: WsEvent = await asyncio.wait_for(queue.get(), timeout=120)
+            except asyncio.TimeoutError:
+                # Análises podem ficar longos períodos sem emitir evento.
+                # Mantemos o socket aberto em vez de transformar inatividade em erro visível.
+                continue
             await websocket.send_text(event.model_dump_json(exclude_none=True))
             if event.event in ("done", "error"):
+                should_cleanup = True
                 break
-    except asyncio.TimeoutError:
-        await websocket.send_json({"event": "error", "message": "timeout"})
     except WebSocketDisconnect:
         pass
     finally:
-        _jobs.pop(job_id, None)
-        _results.pop(job_id, None)
+        if should_cleanup:
+            _jobs.pop(job_id, None)
+            _results.pop(job_id, None)
 
 
 @app.get("/quote/{ticker}")

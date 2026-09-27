@@ -56,23 +56,59 @@ function resultToAgents(result: AnalysisResult): Record<AgentName, AgentState> {
   }, {} as Record<AgentName, AgentState>)
 }
 
+function isTimeoutMessage(message: string | null | undefined): boolean {
+  return (message ?? '').trim().toLowerCase() === 'timeout'
+}
+
 export function useAnalysis(jobId: string): UseAnalysisReturn {
   const [state, setState] = useState<UseAnalysisState>(initialState)
   const [generation, setGeneration] = useState(0)
   const doneOrErrorRef = useRef<boolean>(false)
   const didOpenRef = useRef<boolean>(false)
   const cancelledRef = useRef<boolean>(false)
+  const restPollRef = useRef<number | null>(null)
 
   useEffect(() => {
     doneOrErrorRef.current = false
     didOpenRef.current = false
     cancelledRef.current = false
+    if (restPollRef.current !== null) {
+      window.clearInterval(restPollRef.current)
+      restPollRef.current = null
+    }
     setState(initialState())
+
+    function stopPolling() {
+      if (restPollRef.current !== null) {
+        window.clearInterval(restPollRef.current)
+        restPollRef.current = null
+      }
+    }
+
+    function startPollingForResult() {
+      if (typeof window === 'undefined' || restPollRef.current !== null) return
+      restPollRef.current = window.setInterval(() => {
+        fetchAnalysis(jobId).then(result => {
+          if (cancelledRef.current) return
+          doneOrErrorRef.current = true
+          stopPolling()
+          setState(prev => ({
+            ...prev,
+            agents: resultToAgents(result),
+            currentAgent: null,
+            result,
+            error: null,
+            connectionLost: false,
+          }))
+        }).catch(() => {})
+      }, 3000)
+    }
 
     // Tenta REST primeiro — análises já concluídas existem só no SQLite, não no WS
     fetchAnalysis(jobId).then(result => {
       if (cancelledRef.current) return
       doneOrErrorRef.current = true
+      stopPolling()
       setState(prev => ({
         ...prev,
         agents: resultToAgents(result),
@@ -114,6 +150,7 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
               }
             case 'done': {
               doneOrErrorRef.current = true
+              stopPolling()
               const reconciled = { ...prev.agents }
               for (const name of AGENT_ORDER) {
                 const out = parsed.result.agents[name]
@@ -122,7 +159,12 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
               return { ...prev, agents: reconciled, currentAgent: null, result: parsed.result }
             }
             case 'error':
+              if (isTimeoutMessage(parsed.message)) {
+                startPollingForResult()
+                return { ...prev, connectionLost: true }
+              }
               doneOrErrorRef.current = true
+              stopPolling()
               return { ...prev, error: parsed.message }
             default:
               return prev
@@ -132,6 +174,7 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
 
       ws.onclose = () => {
         if (!doneOrErrorRef.current && didOpenRef.current) {
+          startPollingForResult()
           setState((prev) => ({ ...prev, connectionLost: true }))
         }
       }
@@ -139,11 +182,16 @@ export function useAnalysis(jobId: string): UseAnalysisReturn {
 
     return () => {
       cancelledRef.current = true
+      stopPolling()
       ws?.close()
     }
   }, [jobId, generation])
 
   const reconnect = useCallback(() => {
+    if (restPollRef.current !== null) {
+      window.clearInterval(restPollRef.current)
+      restPollRef.current = null
+    }
     setState((prev) => ({ ...prev, connectionLost: false, error: null }))
     setGeneration((g) => g + 1)
   }, [])

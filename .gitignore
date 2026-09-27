@@ -19,3 +19,7 @@ dist/
 
 # ── Ferramentas ───────────────────────────
 .superpowers/
+
+# ── Anotações locais ──────────────────────
+status.md
+prints/
